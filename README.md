@@ -2,7 +2,7 @@
 
 
 # HTMLToJson
-Use XPath to specify how to parse a particular website and return your desired Json output. Leverages [OpenScraping](https://github.com/Microsoft/openscraping-lib-csharp), [dotnet-script](https://github.com/filipw/dotnet-script), and ScrapingHub's [Splash Server](https://github.com/scrapinghub/splash)
+Use XPath to specify how to parse a particular website and return your desired Json output. Leverages [OpenScraping](https://github.com/Microsoft/openscraping-lib-csharp), [dotnet-script](https://github.com/filipw/dotnet-script), and ScrapingHub's [Splash Server](https://github.com/scrapinghub/splash) in order to fully and faithfully render javascript.
 
 ## Getting Started
 
