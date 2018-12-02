@@ -1,88 +1,86 @@
-[System.Collections.ArrayList]$script:FunctionsForSBUse = @(
-    ${Function:AddMySudoPwd}.Ast.Extent.Text
-    ${Function:AddWinRMTrustedHost}.Ast.Extent.Text
-    ${Function:AddWinRMTrustLocalHost}.Ast.Extent.Text
-    ${Function:DownloadNuGetPackage}.Ast.Extent.Text
-    ${Function:GetElevation}.Ast.Extent.Text
-    ${Function:GetLinuxOctalPermissions}.Ast.Extent.Text
-    ${Function:GetModuleDependencies}.Ast.Extent.Text
-    ${Function:GetMySudoStatus}.Ast.Extent.Text
-    ${Function:InstallLinuxPackage}.Ast.Extent.Text
-    ${Function:InvokeModuleDependencies}.Ast.Extent.Text
-    ${Function:InvokePSCompatibility}.Ast.Extent.Text
-    ${Function:ManualPSGalleryModuleInstall}.Ast.Extent.Text
-    ${Function:NewCronToAddSudoPwd}.Ast.Extent.Text
-    ${Function:NewUniqueString}.Ast.Extent.Text
-    ${Function:RemoveMySudoPwd}.Ast.Extent.Text
-    ${Function:ResolveHost}.Ast.Extent.Text
-    ${Function:ScrubJsonUnicodeSymbols}.Ast.Extent.Text
-    ${Function:SudoPwsh}.Ast.Extent.Text
-    ${Function:TestIsValidIPAddress}.Ast.Extent.Text
-    ${Function:VariableLibraryTemplate}.Ast.Extent.Text
-    ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-SiteAsJson}.Ast.Extent.Text
-    ${Function:Install-Docker}.Ast.Extent.Text
-    ${Function:Install-DotNetScript}.Ast.Extent.Text
-    ${Function:Install-DotNetSDK}.Ast.Extent.Text
-)
+function ManualPSGalleryModuleInstall {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$True)]
+        [string]$ModuleName,
 
-$script:UnicodeSymbolConversion = @{
-    '\u2018' = "'"
-    '\u2019' = "'"
-    '\u201A' = ','
-    '\u201B' = "'"
-    '\u201C' = '"'
-    '\u201D' = '"'
-}
+        [Parameter(Mandatory=$False)]
+        [switch]$PreRelease,
 
-[System.Collections.ArrayList]$script:LuaScriptPSObjects = @(    
-    [pscustomobject]@{
-        LuaScriptName       = 'InfiniteScrolling'
-        LuaScriptContent    = @'
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
-
-    local scroll_to = splash:jsfunc("window.scrollTo")
-    local get_body_height = splash:jsfunc(
-        "function() {return document.body.scrollHeight;}"
+        [Parameter(Mandatory=$False)]
+        [string]$DownloadDirectory
     )
-    local get_inner_height = splash:jsfunc(
-        "function() {return window.innerHeight;}"
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        "function() {return document.body.scrollTop;}"
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
 
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-'@
+    if (!$DownloadDirectory) {
+        $DownloadDirectory = $(Get-Location).Path
     }
-)
+
+    if (!$(Test-Path $DownloadDirectory)) {
+        Write-Error "The path $DownloadDirectory was not found! Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
+
+    if (![bool]$($($env:PSModulePath -split ";") -match [regex]::Escape("$HOME\Documents\WindowsPowerShell\Modules"))) {
+        $env:PSModulePath = "$HOME\Documents\WindowsPowerShell\Modules;$env:PSModulePath"
+    }
+    if (!$(Test-Path "$HOME\Documents\WindowsPowerShell\Modules")) {
+        $null = New-Item -ItemType Directory "$HOME\Documents\WindowsPowerShell\Modules" -Force
+    }
+
+    if ($PreRelease) {
+        $searchUrl = "https://www.powershellgallery.com/api/v2/Packages?`$filter=Id eq '$ModuleName'"
+    }
+    else {
+        $searchUrl = "https://www.powershellgallery.com/api/v2/Packages?`$filter=Id eq '$ModuleName' and IsLatestVersion"
+    }
+    $ModuleInfo = Invoke-RestMethod $searchUrl
+    if (!$ModuleInfo -or $ModuleInfo.Count -eq 0) {
+        Write-Error "Unable to find Module Named $ModuleName! Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
+    if ($PreRelease) {
+        if ($ModuleInfo.Count -gt 1) {
+            $ModuleInfo = $($ModuleInfo | Sort-Object -Property Updated | Where-Object {$_.properties.isPrerelease.'#text' -eq 'true'})[-1]
+        }
+    }
+    
+    $OutFilePath = Join-Path $DownloadDirectory $($ModuleInfo.title.'#text' + $ModuleInfo.properties.version + '.zip')
+    if (Test-Path $OutFilePath) {Remove-Item $OutFilePath -Force}
+
+    try {
+        #Invoke-WebRequest $ModuleInfo.Content.src -OutFile $OutFilePath
+        # Download via System.Net.WebClient is a lot faster than Invoke-WebRequest...
+        $WebClient = [System.Net.WebClient]::new()
+        $WebClient.Downloadfile($ModuleInfo.Content.src, $OutFilePath)
+    }
+    catch {
+        Write-Error $_
+        $global:FunctionResult = "1"
+        return
+    }
+    
+    if (Test-Path "$DownloadDirectory\$ModuleName") {Remove-Item "$DownloadDirectory\$ModuleName" -Recurse -Force}
+    Expand-Archive $OutFilePath -DestinationPath "$DownloadDirectory\$ModuleName"
+
+    if ($DownloadDirectory -ne "$HOME\Documents\WindowsPowerShell\Modules") {
+        if (Test-Path "$HOME\Documents\WindowsPowerShell\Modules\$ModuleName") {
+            Remove-Item "$HOME\Documents\WindowsPowerShell\Modules\$ModuleName" -Recurse -Force
+        }
+        Copy-Item -Path "$DownloadDirectory\$ModuleName" -Recurse -Destination "$HOME\Documents\WindowsPowerShell\Modules"
+
+        Remove-Item "$DownloadDirectory\$ModuleName" -Recurse -Force
+    }
+
+    Remove-Item $OutFilePath -Force
+}
 
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU20i5yCTqVick+I+EfqPT/ltG
-# IWugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKehst4FRbIpIf5iTmu6+Y6IV
+# maigggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -139,11 +137,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFBeJhyFkzkaNIeAU
-# HoIltCrrkSDBMA0GCSqGSIb3DQEBAQUABIIBALEOwbY+gkQ9OloB8LjdC5ExNwt4
-# M1T9y3oofr22oAwV4wzZ3A9N5LGBnV8xogp20TJdK4vyCND9gq7xnWmR3NbHromn
-# LwG8H3tzns+vvVWPjqAIHO54yYFZXSy+5oOlmOjXoqgowSMcaikBiD6OoVx62qrb
-# Ae4K/DlqEiV0RRztKny07DkCsjp5a9y0zxJw9WdJJc9cteEEt/bCC8f6n9+Wgli0
-# v5S63JHf9pSFzDyccG7Xq+AiYKUE7RzN6kW+p9tULi5Bt5fU14pjji6j7d7k2JlF
-# IDV/SqpWM4SJ2Vm8R44HcDgKgRuXBKyc9gSX/GBunzTK+QnIgaHE//TmHQo=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFG2P7uvTxEH17rkh
+# 2UG+pv1iX+6bMA0GCSqGSIb3DQEBAQUABIIBAH6Hm5HLF6QPiFfWK06x8u13CjTo
+# L40m7p1UTfu7MxK+pBNxKxa8C3Bn7UpXqS860RVUIFtTjUUDlXeqkjshFZ0EnKzW
+# LQsuq2lUyXqJq9xm/6TX4zg4ybd60LIhmuRkVTY2FoRKz4bc0NAop6wunjAHyh18
+# ZgHdqU9kiqoaqWhFa1VSK8KP/1a6BEIa3jTuTJYlsHtvg2Rfu2+w4w1wHM2JOV3z
+# 7v1gFHmzZHGkFTzrJoSXH78jhB6Ib5jiTvLGf2T7pfrwp3/MdebcvL1Nj0r1x683
+# c/ID7/4sIp6as84dsgljKrXGST8fZq1orFsBm3GgmZctmyZnLou4LOmJewo=
 # SIG # End signature block

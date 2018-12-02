@@ -1,88 +1,30 @@
-[System.Collections.ArrayList]$script:FunctionsForSBUse = @(
-    ${Function:AddMySudoPwd}.Ast.Extent.Text
-    ${Function:AddWinRMTrustedHost}.Ast.Extent.Text
-    ${Function:AddWinRMTrustLocalHost}.Ast.Extent.Text
-    ${Function:DownloadNuGetPackage}.Ast.Extent.Text
-    ${Function:GetElevation}.Ast.Extent.Text
-    ${Function:GetLinuxOctalPermissions}.Ast.Extent.Text
-    ${Function:GetModuleDependencies}.Ast.Extent.Text
-    ${Function:GetMySudoStatus}.Ast.Extent.Text
-    ${Function:InstallLinuxPackage}.Ast.Extent.Text
-    ${Function:InvokeModuleDependencies}.Ast.Extent.Text
-    ${Function:InvokePSCompatibility}.Ast.Extent.Text
-    ${Function:ManualPSGalleryModuleInstall}.Ast.Extent.Text
-    ${Function:NewCronToAddSudoPwd}.Ast.Extent.Text
-    ${Function:NewUniqueString}.Ast.Extent.Text
-    ${Function:RemoveMySudoPwd}.Ast.Extent.Text
-    ${Function:ResolveHost}.Ast.Extent.Text
-    ${Function:ScrubJsonUnicodeSymbols}.Ast.Extent.Text
-    ${Function:SudoPwsh}.Ast.Extent.Text
-    ${Function:TestIsValidIPAddress}.Ast.Extent.Text
-    ${Function:VariableLibraryTemplate}.Ast.Extent.Text
-    ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-SiteAsJson}.Ast.Extent.Text
-    ${Function:Install-Docker}.Ast.Extent.Text
-    ${Function:Install-DotNetScript}.Ast.Extent.Text
-    ${Function:Install-DotNetSDK}.Ast.Extent.Text
-)
+<#
+    .SYNOPSIS
+        Deploys ScrapingHub's Splash Docker container.
 
-$script:UnicodeSymbolConversion = @{
-    '\u2018' = "'"
-    '\u2019' = "'"
-    '\u201A' = ','
-    '\u201B' = "'"
-    '\u201C' = '"'
-    '\u201D' = '"'
+    .DESCRIPTION
+        See .SYNOPSIS
+
+    .NOTES
+
+    .EXAMPLE
+        # Launch PowerShell and ...
+
+        PS C:\Users\zeroadmin> Deploy-SplashContainer
+#>
+function Deploy-SplashContainer {
+    [CmdletBinding()]
+    Param ()
+
+    docker pull scrapinghub/splash
+    docker run -p 8050:8050 -p 5023:5023 -d --name=splash-jump scrapinghub/splash    
 }
-
-[System.Collections.ArrayList]$script:LuaScriptPSObjects = @(    
-    [pscustomobject]@{
-        LuaScriptName       = 'InfiniteScrolling'
-        LuaScriptContent    = @'
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
-
-    local scroll_to = splash:jsfunc("window.scrollTo")
-    local get_body_height = splash:jsfunc(
-        "function() {return document.body.scrollHeight;}"
-    )
-    local get_inner_height = splash:jsfunc(
-        "function() {return window.innerHeight;}"
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        "function() {return document.body.scrollTop;}"
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
-
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-'@
-    }
-)
 
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU20i5yCTqVick+I+EfqPT/ltG
-# IWugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHNHyg5TqCwU1GEB3qZ97c25x
+# iKWgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -139,11 +81,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFBeJhyFkzkaNIeAU
-# HoIltCrrkSDBMA0GCSqGSIb3DQEBAQUABIIBALEOwbY+gkQ9OloB8LjdC5ExNwt4
-# M1T9y3oofr22oAwV4wzZ3A9N5LGBnV8xogp20TJdK4vyCND9gq7xnWmR3NbHromn
-# LwG8H3tzns+vvVWPjqAIHO54yYFZXSy+5oOlmOjXoqgowSMcaikBiD6OoVx62qrb
-# Ae4K/DlqEiV0RRztKny07DkCsjp5a9y0zxJw9WdJJc9cteEEt/bCC8f6n9+Wgli0
-# v5S63JHf9pSFzDyccG7Xq+AiYKUE7RzN6kW+p9tULi5Bt5fU14pjji6j7d7k2JlF
-# IDV/SqpWM4SJ2Vm8R44HcDgKgRuXBKyc9gSX/GBunzTK+QnIgaHE//TmHQo=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFLwCpndwgXhsJ3me
+# Ls5nYhKh7VsnMA0GCSqGSIb3DQEBAQUABIIBABBuTuKPiR66ePcnIyZD1HnhIDYM
+# W/Hi69mWFEpqTbi3ijV2IA4b6Da1LjAt+qDJ5/KTzHIuvX1wk/2Xx9QXofR0K11P
+# atYbWO1JtXATwAFMJGT7F4tvY7YtscI+YLpW1pVXY1aMJqWuGqyx6IxxwrZqN9bd
+# V5ZjLxQNUOIKJOMVUK4WAel5SnO2CbWBu/apfK87T7euNSpEejFZpe3yNJwXTHpF
+# /MQWX65nHzxFNhLlqcEUBTuXzsjPvF9AVfFmmfcAxZqnn9U3oIj5LvFKRhB4orN+
+# bikBbQk1732szfQyPVlU1dwdEuoC+/eUGcmzectKovxsPeJsuwmSLh0OIbk=
 # SIG # End signature block

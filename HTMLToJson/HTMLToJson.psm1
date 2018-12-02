@@ -722,7 +722,7 @@ function Get-SiteAsJson {
 
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
-        $LuaScriptPSObjs = $(Get-Module SiteScraping).Invoke({$LuaScriptPSObjects})
+        $LuaScriptPSObjs = $(Get-Module HTMLToJson).Invoke({$LuaScriptPSObjects})
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
 
@@ -900,7 +900,7 @@ function Install-Docker {
     Param()
 
     if (!$($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin")) {
-        Write-Error "The $($MyInvocation.MyCommand.Name) function from the SiteScraping Module should only be used on Linux! Halting!"
+        Write-Error "The $($MyInvocation.MyCommand.Name) function from the HTMLToJson Module should only be used on Linux! Halting!"
         $global:FunctionResult = "1"
         return
     }

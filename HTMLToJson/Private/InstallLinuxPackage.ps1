@@ -1,88 +1,56 @@
-[System.Collections.ArrayList]$script:FunctionsForSBUse = @(
-    ${Function:AddMySudoPwd}.Ast.Extent.Text
-    ${Function:AddWinRMTrustedHost}.Ast.Extent.Text
-    ${Function:AddWinRMTrustLocalHost}.Ast.Extent.Text
-    ${Function:DownloadNuGetPackage}.Ast.Extent.Text
-    ${Function:GetElevation}.Ast.Extent.Text
-    ${Function:GetLinuxOctalPermissions}.Ast.Extent.Text
-    ${Function:GetModuleDependencies}.Ast.Extent.Text
-    ${Function:GetMySudoStatus}.Ast.Extent.Text
-    ${Function:InstallLinuxPackage}.Ast.Extent.Text
-    ${Function:InvokeModuleDependencies}.Ast.Extent.Text
-    ${Function:InvokePSCompatibility}.Ast.Extent.Text
-    ${Function:ManualPSGalleryModuleInstall}.Ast.Extent.Text
-    ${Function:NewCronToAddSudoPwd}.Ast.Extent.Text
-    ${Function:NewUniqueString}.Ast.Extent.Text
-    ${Function:RemoveMySudoPwd}.Ast.Extent.Text
-    ${Function:ResolveHost}.Ast.Extent.Text
-    ${Function:ScrubJsonUnicodeSymbols}.Ast.Extent.Text
-    ${Function:SudoPwsh}.Ast.Extent.Text
-    ${Function:TestIsValidIPAddress}.Ast.Extent.Text
-    ${Function:VariableLibraryTemplate}.Ast.Extent.Text
-    ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-SiteAsJson}.Ast.Extent.Text
-    ${Function:Install-Docker}.Ast.Extent.Text
-    ${Function:Install-DotNetScript}.Ast.Extent.Text
-    ${Function:Install-DotNetSDK}.Ast.Extent.Text
-)
+function InstallLinuxPackage {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$True)]
+        [string[]]$PossiblePackageNames,
 
-$script:UnicodeSymbolConversion = @{
-    '\u2018' = "'"
-    '\u2019' = "'"
-    '\u201A' = ','
-    '\u201B' = "'"
-    '\u201C' = '"'
-    '\u201D' = '"'
-}
-
-[System.Collections.ArrayList]$script:LuaScriptPSObjects = @(    
-    [pscustomobject]@{
-        LuaScriptName       = 'InfiniteScrolling'
-        LuaScriptContent    = @'
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
-
-    local scroll_to = splash:jsfunc("window.scrollTo")
-    local get_body_height = splash:jsfunc(
-        "function() {return document.body.scrollHeight;}"
+        [Parameter(Mandatory=$True)]
+        [string]$CommandName
     )
-    local get_inner_height = splash:jsfunc(
-        "function() {return window.innerHeight;}"
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        "function() {return document.body.scrollTop;}"
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
 
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-'@
+    if (!$(command -v $CommandName)) {
+        foreach ($PackageName in $PossiblePackageNames) {
+            if ($(command -v pacman)) {
+                $null = sudo pacman -S $PackageName --noconfirm *> $null
+            }
+            elseif ($(command -v yum)) {
+                $null = sudo yum -y install $PackageName *> $null
+            }
+            elseif ($(command -v dnf)) {
+                $null = sudo dnf -y install $PackageName *> $null
+            }
+            elseif ($(command -v apt)) {
+                $null = sudo apt-get -y install $PackageName *> $null
+            }
+            elseif ($(command -v zypper)) {
+                $null = sudo zypper install $PackageName --non-interactive *> $null
+            }
+
+            if ($(command -v $CommandName)) {
+                break
+            }
+        }
+
+        if (!$(command -v $CommandName)) {
+            Write-Error "Unable to find the command $CommandName! Install unsuccessful! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+        else {
+            Write-Host "$PackageName was successfully installed!" -ForegroundColor Green
+        }
     }
-)
+    else {
+        Write-Warning "The command $CommandName is already available!"
+        return
+    }
+}
 
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU20i5yCTqVick+I+EfqPT/ltG
-# IWugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZIaUVe2SpCHBXY7F1SOcDgc2
+# U9igggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -139,11 +107,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFBeJhyFkzkaNIeAU
-# HoIltCrrkSDBMA0GCSqGSIb3DQEBAQUABIIBALEOwbY+gkQ9OloB8LjdC5ExNwt4
-# M1T9y3oofr22oAwV4wzZ3A9N5LGBnV8xogp20TJdK4vyCND9gq7xnWmR3NbHromn
-# LwG8H3tzns+vvVWPjqAIHO54yYFZXSy+5oOlmOjXoqgowSMcaikBiD6OoVx62qrb
-# Ae4K/DlqEiV0RRztKny07DkCsjp5a9y0zxJw9WdJJc9cteEEt/bCC8f6n9+Wgli0
-# v5S63JHf9pSFzDyccG7Xq+AiYKUE7RzN6kW+p9tULi5Bt5fU14pjji6j7d7k2JlF
-# IDV/SqpWM4SJ2Vm8R44HcDgKgRuXBKyc9gSX/GBunzTK+QnIgaHE//TmHQo=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFP8hrB+4fZ3xI208
+# KKH/fHpkgmLvMA0GCSqGSIb3DQEBAQUABIIBAKkUnlh5ydB3y4yK+w8SMxBtM0Hv
+# lAB1qc+EjrS8jfMsCnC+wTcv19u5atAKAsjF194Z+yvHNOcLzB2WLyCydT59eEm/
+# bFLgbDM/j6fL0TDkzOHyD/jmhqct7FPCwAXIh9zcrbLkM6AV6sY36GQsrZEK7qS+
+# 51Cq6+ZAhQAzlJPo2NDYlwbwQURLdp4Q0gAN6RLF8piXg96+E94Gz1UBaAR3q48B
+# z0v7qO6yMXOLcpVrwZFLT5+khN9tpX1GNtSsLGc5YQRtUe12a3c83Nc8S8CR9SRT
+# xDzv3pFzzcRgX+y/wKZ3ALTYSNB410JVlNb28kqtM1a2RX3iTPCp7UmzRMQ=
 # SIG # End signature block

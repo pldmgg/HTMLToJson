@@ -1,88 +1,74 @@
-[System.Collections.ArrayList]$script:FunctionsForSBUse = @(
-    ${Function:AddMySudoPwd}.Ast.Extent.Text
-    ${Function:AddWinRMTrustedHost}.Ast.Extent.Text
-    ${Function:AddWinRMTrustLocalHost}.Ast.Extent.Text
-    ${Function:DownloadNuGetPackage}.Ast.Extent.Text
-    ${Function:GetElevation}.Ast.Extent.Text
-    ${Function:GetLinuxOctalPermissions}.Ast.Extent.Text
-    ${Function:GetModuleDependencies}.Ast.Extent.Text
-    ${Function:GetMySudoStatus}.Ast.Extent.Text
-    ${Function:InstallLinuxPackage}.Ast.Extent.Text
-    ${Function:InvokeModuleDependencies}.Ast.Extent.Text
-    ${Function:InvokePSCompatibility}.Ast.Extent.Text
-    ${Function:ManualPSGalleryModuleInstall}.Ast.Extent.Text
-    ${Function:NewCronToAddSudoPwd}.Ast.Extent.Text
-    ${Function:NewUniqueString}.Ast.Extent.Text
-    ${Function:RemoveMySudoPwd}.Ast.Extent.Text
-    ${Function:ResolveHost}.Ast.Extent.Text
-    ${Function:ScrubJsonUnicodeSymbols}.Ast.Extent.Text
-    ${Function:SudoPwsh}.Ast.Extent.Text
-    ${Function:TestIsValidIPAddress}.Ast.Extent.Text
-    ${Function:VariableLibraryTemplate}.Ast.Extent.Text
-    ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-SiteAsJson}.Ast.Extent.Text
-    ${Function:Install-Docker}.Ast.Extent.Text
-    ${Function:Install-DotNetScript}.Ast.Extent.Text
-    ${Function:Install-DotNetSDK}.Ast.Extent.Text
-)
+function NewCronToAddSudoPwd {
+    [CmdletBinding()]
+    Param()
 
-$script:UnicodeSymbolConversion = @{
-    '\u2018' = "'"
-    '\u2019' = "'"
-    '\u201A' = ','
-    '\u201B' = "'"
-    '\u201C' = '"'
-    '\u201D' = '"'
-}
+    #region >> Prep
 
-[System.Collections.ArrayList]$script:LuaScriptPSObjects = @(    
-    [pscustomobject]@{
-        LuaScriptName       = 'InfiniteScrolling'
-        LuaScriptContent    = @'
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
-
-    local scroll_to = splash:jsfunc("window.scrollTo")
-    local get_body_height = splash:jsfunc(
-        "function() {return document.body.scrollHeight;}"
-    )
-    local get_inner_height = splash:jsfunc(
-        "function() {return window.innerHeight;}"
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        "function() {return document.body.scrollTop;}"
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
-
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-'@
+    if ($PSVersionTable.Platform -ne "Unix") {
+        Write-Error "This function is meant for use on Linux! Halting!"
+        $global:FunctionResult = "1"
+        return
     }
-)
+
+    # 'Get-SudoStatus' cannnot be run as root...
+    if (GetElevation) {
+        $GetElevationAsString = ${Function:GetElevation}.Ast.Extent.Text
+        $GetMySudoStatusAsString = ${Function:GetMySudoStatus}.Ast.Extent.Text
+        $FinalScript = $GetElevationAsString + "`n" + $GetMySudoStatusAsString + "`n" + "GetMySudoStatus"
+        $PwshScriptBytes = [System.Text.Encoding]::Unicode.GetBytes($FinalScript)
+        $EncodedCommand = [Convert]::ToBase64String($PwshScriptBytes)
+        $GetSudoStatusResult = su $env:SUDO_USER -c "pwsh -EncodedCommand $EncodedCommand" | ConvertFrom-Json
+    }
+    else {
+        $GetSudoStatusResult = GetMySudoStatus | ConvertFrom-Json
+    }
+    
+    if (!$GetSudoStatusResult.HasSudoPrivileges) {
+        Write-Error "The user does not appear to have sudo privileges on $env:HOSTNAME! Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
+    
+    if ($GetSudoStatusResult.PasswordPrompt) {
+        Write-Host "The account '$(whoami)' is already configured to be prompted for a password when running 'sudo pwsh'! No changes made." -ForegroundColor Green
+        return
+    }
+
+    $DomainName = $GetSudoStatusResult.DomainInfo.DomainName
+    $DomainNameShort = $GetSudoStatusResult.DomainInfo.DomainNameShort
+    $UserNameShort = $GetSudoStatusResult.DomainInfo.UserNameShort
+
+    #endregion >> Prep
+
+    #region >> Main
+
+    if ($DomainNameShort) {
+        $RemoveUserString = "grep -Eic '\%$DomainNameShort..$UserNameShort ALL=\(ALL\) NOPASSWD: SUDO_PWSH' > " +
+        "/dev/null && sed -i '/$DomainNameShort..$UserNameShort ALL.*SUDO_PWSH/d' /etc/sudoers"
+    }
+    else {
+        $RemoveUserString = "grep -Eic '$UserNameShort ALL=\(ALL\) NOPASSWD: SUDO_PWSH' > " +
+        "/dev/null && sed -i '/$UserNameShort ALL.*SUDO_PWSH/d' /etc/sudoers"
+    }
+
+    $BashScriptPrep = @(
+        'set -f'
+        "croncmd=\`"sleep 10; ps aux | grep -v grep | grep -Eic '$PID.*pwsh' && echo pwshStillRunning || cat /etc/sudoers.d/pwsh-nosudo.conf | $RemoveUserString && ( crontab -l | grep 'ps aux.*cat /etc/sudoers' ) | crontab -\`""
+        'cronjob=\"* * * * * $croncmd\"'
+        "( crontab -l | grep 'ps aux.*cat /etc/sudoers'; echo \`"`$cronjob\`" ) | crontab -"
+    )
+    $BashScript = $BashScriptPrep -join '; '
+    
+    sudo bash -c "$BashScript"
+
+    #endregion >> Main
+}
 
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU20i5yCTqVick+I+EfqPT/ltG
-# IWugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU4jDWGVJ5YlhWlSSOQmnu49II
+# NTOgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -139,11 +125,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFBeJhyFkzkaNIeAU
-# HoIltCrrkSDBMA0GCSqGSIb3DQEBAQUABIIBALEOwbY+gkQ9OloB8LjdC5ExNwt4
-# M1T9y3oofr22oAwV4wzZ3A9N5LGBnV8xogp20TJdK4vyCND9gq7xnWmR3NbHromn
-# LwG8H3tzns+vvVWPjqAIHO54yYFZXSy+5oOlmOjXoqgowSMcaikBiD6OoVx62qrb
-# Ae4K/DlqEiV0RRztKny07DkCsjp5a9y0zxJw9WdJJc9cteEEt/bCC8f6n9+Wgli0
-# v5S63JHf9pSFzDyccG7Xq+AiYKUE7RzN6kW+p9tULi5Bt5fU14pjji6j7d7k2JlF
-# IDV/SqpWM4SJ2Vm8R44HcDgKgRuXBKyc9gSX/GBunzTK+QnIgaHE//TmHQo=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFOR0zE070YVMek8S
+# 230Y0i7GzHqxMA0GCSqGSIb3DQEBAQUABIIBAEZAiG0mElTzuU9rLK8U16kmGJCO
+# k9A+9qgtMGdoOtWHmxkn4mVX4v2OTeKc3CSs2Nrs2o7xGHJLbr105okozVYyYPU9
+# gT42hLVUxdmo+1v6siPH4JKE9hC9kBMg8xQzfacU1k8bArhMBYzfg6PfZIh/OrhX
+# VH2a8FWPvNYB1ogGceyDDOLoh9C0gimspxr2OTnkSoaS+Ak3f7V65Wks8duIhhaT
+# pYRmJYHhGL3QgqNxx3Rq+zcy0D9MNxYrubvyALuuvDHJdpyqBahovmf/dduT5C9f
+# BZbolpIxRCYJX193xuMnw9ef1oiCEsBpEuizNrdQvKCLDA13E8RkeCIW5WA=
 # SIG # End signature block

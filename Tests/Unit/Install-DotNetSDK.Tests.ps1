@@ -6,14 +6,14 @@ param(
 # NOTE: `Set-BuildEnvironment -Force -Path $PSScriptRoot` from build.ps1 makes the following $env: available:
 <#
     $env:BHBuildSystem = "Unknown"
-    $env:BHProjectPath = "U:\powershell\ProjectRepos\SiteScraping"
+    $env:BHProjectPath = "U:\powershell\ProjectRepos\HTMLToJson"
     $env:BHBranchName = "master"
     $env:BHCommitMessage = "!deploy"
     $env:BHBuildNumber = 0
-    $env:BHProjectName = "SiteScraping"
-    $env:BHPSModuleManifest = "U:\powershell\ProjectRepos\SiteScraping\SiteScraping\SiteScraping.psd1"
-    $env:BHModulePath = "U:\powershell\ProjectRepos\SiteScraping\SiteScraping"
-    $env:BHBuildOutput = "U:\powershell\ProjectRepos\SiteScraping\BuildOutput"
+    $env:BHProjectName = "HTMLToJson"
+    $env:BHPSModuleManifest = "U:\powershell\ProjectRepos\HTMLToJson\HTMLToJson\HTMLToJson.psd1"
+    $env:BHModulePath = "U:\powershell\ProjectRepos\HTMLToJson\HTMLToJson"
+    $env:BHBuildOutput = "U:\powershell\ProjectRepos\HTMLToJson\BuildOutput"
 #>
 
 # NOTE: If -TestResources was used, the folloqing resources should be available

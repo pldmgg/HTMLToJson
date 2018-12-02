@@ -75,9 +75,6 @@ Describe -Name "General Project Validation: $env:BHProjectName" -Tag 'Validation
         $Commands -contains 'TestIsValidIPAddress' | Should Be $False
         
         $Commands -contains 'Deploy-SplashContainer' | Should Be $True
-        $Commands -contains 'Get-JWGenres' | Should Be $True
-        $Commands -contains 'Get-JWMedia' | Should Be $True
-        $Commands -contains 'Get-JWStreamingServices' | Should Be $True
         $Commands -contains 'Get-SiteAsJson' | Should Be $True
         $Commands -contains 'Install-Docker' | Should Be $True
         $Commands -contains 'Install-DotNetSDK' | Should Be $True

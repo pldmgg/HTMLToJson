@@ -1,88 +1,83 @@
-[System.Collections.ArrayList]$script:FunctionsForSBUse = @(
-    ${Function:AddMySudoPwd}.Ast.Extent.Text
-    ${Function:AddWinRMTrustedHost}.Ast.Extent.Text
-    ${Function:AddWinRMTrustLocalHost}.Ast.Extent.Text
-    ${Function:DownloadNuGetPackage}.Ast.Extent.Text
-    ${Function:GetElevation}.Ast.Extent.Text
-    ${Function:GetLinuxOctalPermissions}.Ast.Extent.Text
-    ${Function:GetModuleDependencies}.Ast.Extent.Text
-    ${Function:GetMySudoStatus}.Ast.Extent.Text
-    ${Function:InstallLinuxPackage}.Ast.Extent.Text
-    ${Function:InvokeModuleDependencies}.Ast.Extent.Text
-    ${Function:InvokePSCompatibility}.Ast.Extent.Text
-    ${Function:ManualPSGalleryModuleInstall}.Ast.Extent.Text
-    ${Function:NewCronToAddSudoPwd}.Ast.Extent.Text
-    ${Function:NewUniqueString}.Ast.Extent.Text
-    ${Function:RemoveMySudoPwd}.Ast.Extent.Text
-    ${Function:ResolveHost}.Ast.Extent.Text
-    ${Function:ScrubJsonUnicodeSymbols}.Ast.Extent.Text
-    ${Function:SudoPwsh}.Ast.Extent.Text
-    ${Function:TestIsValidIPAddress}.Ast.Extent.Text
-    ${Function:VariableLibraryTemplate}.Ast.Extent.Text
-    ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-SiteAsJson}.Ast.Extent.Text
-    ${Function:Install-Docker}.Ast.Extent.Text
-    ${Function:Install-DotNetScript}.Ast.Extent.Text
-    ${Function:Install-DotNetSDK}.Ast.Extent.Text
-)
+<#
+    .SYNOPSIS
+        This function adds an IP or hostname/fqdn to "WSMan:\localhost\Client\TrustedHosts". It also ensures
+        that the WSMan Client is configured to allow for remoting.
 
-$script:UnicodeSymbolConversion = @{
-    '\u2018' = "'"
-    '\u2019' = "'"
-    '\u201A' = ','
-    '\u201B' = "'"
-    '\u201C' = '"'
-    '\u201D' = '"'
-}
+    .DESCRIPTION
+        See .SYNOPSIS
 
-[System.Collections.ArrayList]$script:LuaScriptPSObjects = @(    
-    [pscustomobject]@{
-        LuaScriptName       = 'InfiniteScrolling'
-        LuaScriptContent    = @'
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
+    .NOTES
 
-    local scroll_to = splash:jsfunc("window.scrollTo")
-    local get_body_height = splash:jsfunc(
-        "function() {return document.body.scrollHeight;}"
+    .PARAMETER NewRemoteHost
+        This parameter is MANDATORY.
+
+        This parameter takes a string that represents the IP Address, HostName, or FQDN of the Remote Host
+        that you would like to PSRemote to.
+
+    .EXAMPLE
+        # Open an elevated PowerShell Session, import the module, and -
+
+        PS C:\Users\zeroadmin> AddWinRMTrustedHost -NewRemoteHost 192.168.2.49
+        
+#>
+function AddWinRMTrustedHost {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$True)]
+        [string[]]$NewRemoteHost
     )
-    local get_inner_height = splash:jsfunc(
-        "function() {return window.innerHeight;}"
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        "function() {return document.body.scrollTop;}"
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
 
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-'@
+    # Make sure WinRM in Enabled and Running on $env:ComputerName
+    try {
+        $null = Enable-PSRemoting -Force -ErrorAction Stop
     }
-)
+    catch {
+        $NICsWPublicProfile = @(Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq 0})
+        if ($NICsWPublicProfile.Count -gt 0) {
+            foreach ($Nic in $NICsWPublicProfile) {
+                Set-NetConnectionProfile -InterfaceIndex $Nic.InterfaceIndex -NetworkCategory 'Private'
+            }
+        }
+
+        try {
+            $null = Enable-PSRemoting -Force
+        }
+        catch {
+            Write-Error $_
+            Write-Error "Problem with Enabble-PSRemoting WinRM Quick Config! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+    }
+
+    # If $env:ComputerName is not part of a Domain, we need to add this registry entry to make sure WinRM works as expected
+    if (!$(Get-CimInstance Win32_Computersystem).PartOfDomain) {
+        $null = reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f
+    }
+
+    # Add the New Server's IP Addresses to $env:ComputerName's TrustedHosts
+    $CurrentTrustedHosts = $(Get-Item WSMan:\localhost\Client\TrustedHosts).Value
+    [System.Collections.ArrayList][array]$CurrentTrustedHostsAsArray = $CurrentTrustedHosts -split ','
+
+    $HostsToAddToWSMANTrustedHosts = @($NewRemoteHost)
+    foreach ($HostItem in $HostsToAddToWSMANTrustedHosts) {
+        if ($CurrentTrustedHostsAsArray -notcontains $HostItem) {
+            $null = $CurrentTrustedHostsAsArray.Add($HostItem)
+        }
+        else {
+            Write-Warning "Current WinRM Trusted Hosts Config already includes $HostItem"
+            continue
+        }
+    }
+    $UpdatedTrustedHostsString = $($CurrentTrustedHostsAsArray | Where-Object {![string]::IsNullOrWhiteSpace($_)}) -join ','
+    Set-Item WSMan:\localhost\Client\TrustedHosts $UpdatedTrustedHostsString -Force
+}
 
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU20i5yCTqVick+I+EfqPT/ltG
-# IWugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULNu0UfWVcMpjSaNi/cwkBhnq
+# lOugggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -139,11 +134,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFBeJhyFkzkaNIeAU
-# HoIltCrrkSDBMA0GCSqGSIb3DQEBAQUABIIBALEOwbY+gkQ9OloB8LjdC5ExNwt4
-# M1T9y3oofr22oAwV4wzZ3A9N5LGBnV8xogp20TJdK4vyCND9gq7xnWmR3NbHromn
-# LwG8H3tzns+vvVWPjqAIHO54yYFZXSy+5oOlmOjXoqgowSMcaikBiD6OoVx62qrb
-# Ae4K/DlqEiV0RRztKny07DkCsjp5a9y0zxJw9WdJJc9cteEEt/bCC8f6n9+Wgli0
-# v5S63JHf9pSFzDyccG7Xq+AiYKUE7RzN6kW+p9tULi5Bt5fU14pjji6j7d7k2JlF
-# IDV/SqpWM4SJ2Vm8R44HcDgKgRuXBKyc9gSX/GBunzTK+QnIgaHE//TmHQo=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFMxqqeXBm5pv11ta
+# Vgk/P5yvYtwUMA0GCSqGSIb3DQEBAQUABIIBAJZAoNDw0o3vysxGfXIhxwuCJgM/
+# 0OCWYCCCtwSRz4ZrbG7sbGiyZhowA4igEh3HR8SjSaX4T9df7vUdg4EYM1yEnPJ/
+# 7ncXc+2weuCTqpW7zmEJUpUi7BL5AGJdWwVHg95OaB8pKVk40UfSUgu71XBFAaSF
+# 4i5YmkNHhLOt3b3eNiC9kCG+RPi/FvDm5QSQqirVEoW3KMWIWImZtiWEbZF1Jv4v
+# hI3C9zi+Gdu+fMtkEEfxNd+u9gNQUzqOO37uV38jRzw2bqrbo2E+8+AWLLnv4m57
+# NfMbCxemkxODMjCx0mhzCGW+rdvI6Cic/Fxil4ZhxDiTFGRZ//7iBABdwrk=
 # SIG # End signature block

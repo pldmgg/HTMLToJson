@@ -1,8 +1,8 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/github/pldmgg/=master&svg=true)](https://ci.appveyor.com/project/pldmgg/sudo/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/pldmgg/htmltojson?branch=master&svg=true)](https://ci.appveyor.com/project/pldmgg/htmltojson/branch/master)
 
 
 # HTMLToJson
-<Synopsis>
+Use XPath to specify how to parse a particular website and return your desired Json output. Leverages [OpenScraping](https://github.com/Microsoft/openscraping-lib-csharp), [dotnet-script](https://github.com/filipw/dotnet-script), and ScrapingHub's [Splash Server](https://github.com/scrapinghub/splash)
 
 ## Getting Started
 
@@ -30,9 +30,51 @@
 ### Scenario 1
 
 ```powershell
-powershell code
+PS C:\Users\zeroadmin> $JsonXPathConfigString = @"
+{
+    "title": "//*/h1",
+    "VisibleAPIs": {
+        "_xpath": "//a[(@class=\"list-group-item\")]",
+        "APIName": ".//h3",
+        "APIVersion": ".//p//code//span[normalize-space()][2]",
+        "APIDescription": ".//p[(@class=\"list-group-item-text\")]"
+    }
+}
+"@
+PS C:\Users\zeroadmin> Get-SiteAsJson -Url 'http://dotnetapis.com/' -XPathJsonConfigString $JsonXPathConfigString -SplashServerUri 'http://192.168.2.60:8050'
+
+{
+    "title": "DotNetApis (BETA)",
+    "VisibleAPIs": [
+        {
+            "APIName": "NUnit",
+            "APIVersion": "3.11.0",
+            "APIDescription": "NUnit is a unit-testing framework for all .NET languages with a strong TDD focus."
+        },
+        {
+            "APIName": "Json.NET",
+            "APIVersion": "12.0.1",
+            "APIDescription": "Json.NET is a popular high-performance JSON framework for .NET"
+        },
+        {
+            "APIName": "EntityFramework",
+            "APIVersion": "6.2.0",
+            "APIDescription": "Entity Framework is Microsoft's recommended data access technology for new applications."
+        },
+        {
+            "APIName": "MySql.Data",
+            "APIVersion": "8.0.13",
+            "APIDescription": "MySql.Data.MySqlClient .Net Core Class Library"
+        },
+        {
+            "APIName": "NuGet.Core",
+            "APIVersion": "2.14.0",
+            "APIDescription": "NuGet.Core is the core framework assembly for NuGet that the rest of NuGet builds upon."
+        }
+    ]
+}
 ```
 
 ## Notes
 
-* PSGallery: 
+* PSGallery: https://www.powershellgallery.com/packages/HTMLToJson
