@@ -124,340 +124,6 @@ function Deploy-SplashContainer {
 
 <#
     .SYNOPSIS
-        Get a list of Genres for different media.
-
-    .DESCRIPTION
-        See .SYNOPSIS
-
-    .NOTES
-
-    .PARAMETER Country
-        This parameter is MANDATORY.
-
-        This parameter takes a string that specifies which country you would like to gather streaming information about.
-
-    .EXAMPLE
-        # Launch PowerShell and ...
-
-        PS C:\Users\zeroadmin> Get-JWGenres -Country "us"
-#>
-function Get-JWGenres {
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory=$True)]
-        [ValidateSet("us","ca","mx","br","de","at","ch","uk","ie","ru","it","fr","es","nl","no",
-        "se","dk","fi","lt","lv","ee","za","au","nz","in","jp","kr","th","my","ph","sg","id",
-        "US","USA","Canada","Mexico","Brazil","Germany","Austria","Switzerland","United Kingdom",
-        "Ireland","Russia","Italy","France","Spain","Netherlands","Norway","Sweden","Denmark",
-        "Finland","Lithuania","Latvia","Estonia","South Africa","Australia","New Zealand",
-        "India","Japan","South Korea","Thailand","Malaysia","Philippines","Singapore","Indonesia")]
-        [string]$Country
-    )
-
-    $CountryConversion = @{
-        US                  = "us"
-        USA                 = "us"
-        Canada              = "ca"
-        Mexico              = "mx"
-        Brazil              = "br"
-        Germany             = "de"
-        Austria             = "at"
-        Switzerland         = "ch"
-        'United Kingdom'    = "uk"
-        Ireland             = "ie"
-        Russia              = "ru"
-        Italy               = "it"
-        France              = "fr"
-        Spain               = "es"
-        Netherlands         = "nl"
-        Norway              = "no"
-        Sweden              = "se"
-        Denmark             = "dk"
-        Finland             = "fi"
-        Lithuania           = "lt"
-        Latvia              = "lv"
-        Estonia             = "ee"
-        'South Africa'      = "za"
-        Australia           = "au"
-        'New Zealand'       = "nz"
-        India               = "in"
-        Japan               = "jp"
-        'South Korea'       = "kr"
-        Thailand            = "th"
-        Malaysia            = "my"
-        Philippines         = "ph"
-        Singapore           = "sg"
-        Indonesia           = "id"
-    }
-
-    if ($CountryConversion.Keys -contains $Country) {
-        $FinalCountry = $CountryConversion.$Country
-    }
-    else {
-        $FinalCountry = $Country
-    }
-
-    #//*/span[@genres="filters.genres"]//li/a
-    $JsonXPathConfigString = @"
-{
-    "title": "//*/img[@class=\"logo__img\"]/@alt",
-    "Genres": {
-        "_xpath": "//*/span[@genres=\"filters.genres\"]",
-        "text": ".//li/a/text()"
-    }
-}
-"@
-    $BaseUrl = "https://www.justwatch.com/$FinalCountry/"
-    $TextInfo = (Get-Culture).TextInfo
-    
-    $StreamingServicesInfoPrep = Get-SiteAsJson -Url $BaseUrl -XPathJsonConfigString $JsonXPathConfigString
-    $($StreamingServicesInfoPrep | ConvertFrom-Json).Genres.text | foreach {$_.Trim()}
-}
-
-
-<#
-    .SYNOPSIS
-        Parses a website's html and returns json.
-
-    .DESCRIPTION
-        See .SYNOPSIS
-
-    .NOTES
-
-    .PARAMETER Country
-        This parameter is MANDATORY.
-
-        This parameter takes a string that specifies which country you would like to gather streaming information about.
-
-    .PARAMETER StreamingServiceName
-        This parameter is MANDATORY.
-
-        This parameter takes a string that specifies which streaming service you would like to gather information about.
-
-    .PARAMETER TVOrMovie
-        This parameter is MANDATORY.
-
-        This parameter takes a string that specifies whether you are looking for information about tv shows or movies.
-
-    .PARAMETER ReleaseYear
-        This parameter is MANDATORY.
-
-        This parameter takes a string that represents a year from 1900 to the current year. Gathers info pertaining to that year.
-
-    .EXAMPLE
-        # Launch PowerShell and ...
-
-        PS C:\Users\zeroadmin> Get-JWMedia -Country "us" -StreamingServiceName "Netflix" -TVOrMovie "movies" -ReleaseYear 2018
-#>
-function Get-JWMedia {
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory=$True)]
-        [ValidateSet("us","ca","mx","br","de","at","ch","uk","ie","ru","it","fr","es","nl","no",
-        "se","dk","fi","lt","lv","ee","za","au","nz","in","jp","kr","th","my","ph","sg","id",
-        "US","USA","Canada","Mexico","Brazil","Germany","Austria","Switzerland","United Kingdom",
-        "Ireland","Russia","Italy","France","Spain","Netherlands","Norway","Sweden","Denmark",
-        "Finland","Lithuania","Latvia","Estonia","South Africa","Australia","New Zealand",
-        "India","Japan","South Korea","Thailand","Malaysia","Philippines","Singapore","Indonesia")]
-        [string]$Country,
-    
-        [Parameter(Mandatory=$True)]
-        [ValidateSet('netflix','amazon-prime-video','amazon prime video','hulu',
-        'yahoo-view','yahoo view','amazon-video','amazon video','hbo-now',
-        'hbo now','youtube','youtube-premium','youtube premium','google-play-movies',
-        'google play movies','apple-itunes','apple itunes','cbs','the-roku-channel',
-        'the roku channel','hoopla','the-cw','the cw','cw-seed','cw seed','starz',
-        'fandangonow','vudu','showtime','pbs','pantaflix','fxnow','tubi-tv','tubi tv',
-        'dc-universe','dc universe','kanopy','playstation','microsoft-store','microsoft store',
-        'max-go','max go','filmstruck','hbo-go','hbo go','abc','crackle','amc','fandor',
-        'curiosity-stream','curiosity stream','nbc','epix','freeform','history','syfy','aande',
-        'lifetime','shudder','screambox','acorn-tv','acorn tv','sundance-now','sundance now',
-        'britbox','guidedoc','realeyz','mubi','netflix-kids','netflix kids')]
-        [string]$StreamingServiceName,
-
-        [Parameter(Mandatory=$True)]
-        [ValidateSet("television","tv","tv-shows","movies","movie")]
-        [string]$TVOrMovie,
-        
-        [Parameter(Mandatory=$True)]
-        [ValidateScript({
-            if ($(1900..$(Get-Date).Year) -notcontains $_) {$False} else {$True}
-        })]
-        [string]$ReleaseYear
-    )
-
-    if ($StreamingServiceName -match "[\s]") {
-        $FinalServiceName = $StreamingServiceName -replace "[\s]","-"
-    }
-    else {
-        $FinalServiceName = $StreamingServiceName
-    }
-
-    $CountryConversion = @{
-        US                  = "us"
-        USA                 = "us"
-        Canada              = "ca"
-        Mexico              = "mx"
-        Brazil              = "br"
-        Germany             = "de"
-        Austria             = "at"
-        Switzerland         = "ch"
-        'United Kingdom'    = "uk"
-        Ireland             = "ie"
-        Russia              = "ru"
-        Italy               = "it"
-        France              = "fr"
-        Spain               = "es"
-        Netherlands         = "nl"
-        Norway              = "no"
-        Sweden              = "se"
-        Denmark             = "dk"
-        Finland             = "fi"
-        Lithuania           = "lt"
-        Latvia              = "lv"
-        Estonia             = "ee"
-        'South Africa'      = "za"
-        Australia           = "au"
-        'New Zealand'       = "nz"
-        India               = "in"
-        Japan               = "jp"
-        'South Korea'       = "kr"
-        Thailand            = "th"
-        Malaysia            = "my"
-        Philippines         = "ph"
-        Singapore           = "sg"
-        Indonesia           = "id"
-    }
-
-    if ($CountryConversion.Keys -contains $Country) {
-        $FinalCountry = $CountryConversion.$Country
-    }
-    else {
-        $FinalCountry = $Country
-    }
-
-    switch ($TVOrMovie) {
-        {$_ -match "television|tv"} {$FinalTVOrMovie = "tv-shows"}
-        {$_ -match "movie"} {$FinalTVOrMovie = "movies"}
-    }
-    
-
-    $JsonXPathConfigString = @"
-{
-    "title": "//*/img[@class=\"logo__img\"]/@alt",
-    "Media": {
-        "_xpath": "//*/filter-bar",
-        "hrefs": ".//ng-transclude//div[@class=\"main-content__poster__image__container\"]//a/@href"
-    }
-}
-"@
-
-    $FinalUrl = "https://www.justwatch.com/{0}/provider/{1}/{2}?release_year_from={3}" -f $FinalCountry,$FinalServiceName,$FinalTVOrMovie,$ReleaseYear
-    Get-SiteAsJson -Url $FinalUrl -XPathJsonConfigString $JsonXPathConfigString -HandleInfiniteScrolling | ConvertFrom-Json
-}
-
-
-<#
-    .SYNOPSIS
-        Get a list of hrefs representing different streaming services.
-
-    .DESCRIPTION
-        See .SYNOPSIS
-
-    .NOTES
-
-    .PARAMETER Country
-        This parameter is MANDATORY.
-
-        This parameter takes a string that specifies which country you would like to gather streaming information about.
-
-    .EXAMPLE
-        # Launch PowerShell and ...
-
-        PS C:\Users\zeroadmin> Get-JWStreamingServices -Country "us"
-#>
-function Get-JWStreamingServices {
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory=$True)]
-        [ValidateSet("us","ca","mx","br","de","at","ch","uk","ie","ru","it","fr","es","nl","no",
-        "se","dk","fi","lt","lv","ee","za","au","nz","in","jp","kr","th","my","ph","sg","id",
-        "US","USA","Canada","Mexico","Brazil","Germany","Austria","Switzerland","United Kingdom",
-        "Ireland","Russia","Italy","France","Spain","Netherlands","Norway","Sweden","Denmark",
-        "Finland","Lithuania","Latvia","Estonia","South Africa","Australia","New Zealand",
-        "India","Japan","South Korea","Thailand","Malaysia","Philippines","Singapore","Indonesia")]
-        [string]$Country
-    )
-
-    $CountryConversion = @{
-        US                  = "us"
-        USA                 = "us"
-        Canada              = "ca"
-        Mexico              = "mx"
-        Brazil              = "br"
-        Germany             = "de"
-        Austria             = "at"
-        Switzerland         = "ch"
-        'United Kingdom'    = "uk"
-        Ireland             = "ie"
-        Russia              = "ru"
-        Italy               = "it"
-        France              = "fr"
-        Spain               = "es"
-        Netherlands         = "nl"
-        Norway              = "no"
-        Sweden              = "se"
-        Denmark             = "dk"
-        Finland             = "fi"
-        Lithuania           = "lt"
-        Latvia              = "lv"
-        Estonia             = "ee"
-        'South Africa'      = "za"
-        Australia           = "au"
-        'New Zealand'       = "nz"
-        India               = "in"
-        Japan               = "jp"
-        'South Korea'       = "kr"
-        Thailand            = "th"
-        Malaysia            = "my"
-        Philippines         = "ph"
-        Singapore           = "sg"
-        Indonesia           = "id"
-    }
-
-    if ($CountryConversion.Keys -contains $Country) {
-        $FinalCountry = $CountryConversion.$Country
-    }
-    else {
-        $FinalCountry = $Country
-    }
-
-    $JsonXPathConfigString = @"
-{
-    "title": "//*/img[@class=\"logo__img\"]/@alt",
-    "Services": {
-        "_xpath": "//*/horizontal-scrollable",
-        "hrefs": ".//ng-transclude//a/@href"
-    }
-}
-"@
-    $BaseUrl = "https://www.justwatch.com/$FinalCountry/"
-    $TextInfo = (Get-Culture).TextInfo
-    
-    $StreamingServicesInfoPrep = Get-SiteAsJson -Url $BaseUrl -XPathJsonConfigString $JsonXPathConfigString
-    $($StreamingServicesInfoPrep | ConvertFrom-Json).Services.hrefs | foreach {
-        $ServiceNamehref = $($_ -split '/')[-1]
-        [pscustomobject]@{
-            FullUrl         = $BaseUrl + $_
-            ServiceNamehref = $ServiceNamehref
-            ServiceName     = $TextInfo.ToTitleCase($($ServiceNamehref -replace '-',' '))
-        }
-    }
-}
-
-
-<#
-    .SYNOPSIS
         Parses a website's html and returns json.
 
     .DESCRIPTION
@@ -475,6 +141,12 @@ function Get-JWStreamingServices {
 
         This parameter takes a string that represents a path to a new dotnet console app project. If this parameter is not used, the project
         directory will be created in the current location.
+
+    .PARAMETER SplashServerUri
+        This parameter is OPTIONAL, however, a default value of 'http://localhost:8050' is provided.
+
+        This parameter takes a string that represents the url of the splash server on your network. The splash server handles fully rendering
+        and controlling web pages (even if they use javascript).
     
     .PARAMETER XPathJsonConfigString
         This parameter is OPTIONAL.
@@ -514,13 +186,58 @@ function Get-JWStreamingServices {
     .EXAMPLE
         # Launch PowerShell and ...
 
-        PS C:\Users\zeroadmin> Get-SiteAsJson -Url 'http://dotnetapis.com/'
+        PS C:\Users\zeroadmin> $JsonXPathConfigString = @"
+        {
+            "title": "//*/h1",
+            "VisibleAPIs": {
+                "_xpath": "//a[(@class='list-group-item')]",
+                "APIName": ".//h3",
+                "APIVersion": ".//p//code//span[normalize-space()][2]",
+                "APIDescription": ".//p[(@class='list-group-item-text')]"
+            }
+        }
+        "@
+        PS C:\Users\zeroadmin> Get-SiteAsJson -Url 'http://dotnetapis.com/' -XPathJsonConfigString $JsonXPathConfigString
+
+        {
+            "title": "DotNetApis (BETA)",
+            "VisibleAPIs": [
+                {
+                    "APIName": "NUnit",
+                    "APIVersion": "3.11.0",
+                    "APIDescription": "NUnit is a unit-testing framework for all .NET languages with a strong TDD focus."
+                },
+                {
+                    "APIName": "Json.NET",
+                    "APIVersion": "12.0.1",
+                    "APIDescription": "Json.NET is a popular high-performance JSON framework for .NET"
+                },
+                {
+                    "APIName": "EntityFramework",
+                    "APIVersion": "6.2.0",
+                    "APIDescription": "Entity Framework is Microsoft's recommended data access technology for new applications."
+                },
+                {
+                    "APIName": "MySql.Data",
+                    "APIVersion": "8.0.13",
+                    "APIDescription": "MySql.Data.MySqlClient .Net Core Class Library"
+                },
+                {
+                    "APIName": "NuGet.Core",
+                    "APIVersion": "2.14.0",
+                    "APIDescription": "NuGet.Core is the core framework assembly for NuGet that the rest of NuGet builds upon."
+                }
+            ]
+        }
 #>
 function Get-SiteAsJson {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$True)]
         [uri]$Url,
+
+        [Parameter(Mandatory=$False)]
+        [uri]$SplashServerUri = "http://localhost:8050",
 
         [Parameter(Mandatory=$False)]
         [string]$XPathJsonConfigString,
@@ -538,21 +255,79 @@ function Get-SiteAsJson {
         [switch]$RemoveFileOutputs
     )
 
+    # Make sure we have dotnet and dotnet-script in our $env:Path
+    $DirSep = [IO.Path]::DirectorySeparatorChar
+
+    if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
+        $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+
+        if (!$(Test-Path $DotNetToolsDir)) {
+            Write-Error "Unable to find '$DotNetToolsDir'! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
+            $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
+            $env:Path = $CurrentEnvPathArray -join ';'
+        }
+    }
+    if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
+        Write-Error "Unable to find 'dotnet-script' binary! Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
+
+    if (!$PSVersionTable.Platform -or $PSVersionTable.Platform -eq "Win32NT") {
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            $DotNetDir = "C:\Program Files\dotnet"
+
+            if (!$(Test-Path $DotNetDir)) {
+                Write-Error "Unable to find '$DotNetDir'! Halting!"
+                $global:FunctionResult = "1"
+                return
+            }
+
+            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+            if ($CurrentEnvPathArray -notcontains $DotNetDir) {
+                $CurrentEnvPathArray.Insert(0,$DotNetDir)
+                $env:Path = $CurrentEnvPathArray -join ';'
+            }
+        }
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Error "Unable to find 'dotnet' binary! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+    }
+    if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Error "Unable to find 'dotnet' binary! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+    }
+
     if (!$XPathJsonConfigFile -and !$XPathJsonConfigString) {
         Write-Error "The $($MyInvocation.MyCommand.Name) function requires either the -XPathJsonConfigString or the -XPathJsonConfigFile parameter! Halting!"
         $global:FunctionResult = "1"
         return
     }
 
-    $DirSep = [IO.Path]::DirectorySeparatorChar
+    Write-Host "HereA"
 
     $UrlString = $Url.OriginalString
     if ($UrlString[-1] -ne '/') {
         $UrlString = $UrlString + '/'
     }
+
+    $SplashServerUriString = $SplashServerUri.OriginalString
     
     $SiteNamePrep = @($($Url.OriginalString -split '/' | Where-Object {$_ -notmatch 'http' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
     $SiteName = @($($SiteNamePrep -split '\.' | Where-Object {$_ -notmatch 'www' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
+
+    Write-Host "HereB"
 
     if (!$SiteName) {
         Write-Error "Unable to parse site domain name from the value provided to the -Url parameter! Halting!"
@@ -561,6 +336,8 @@ function Get-SiteAsJson {
     }
 
     if ($XPathJsonConfigFile) {
+        Write-Host "HereB1"
+        Write-Host "XPathJsonConfigFile is: $XPathJsonConfigFile"
         try {
             $XPathJsonConfigFile = $(Resolve-Path $XPathJsonConfigFile -ErrorAction Stop).Path
         }
@@ -582,6 +359,7 @@ function Get-SiteAsJson {
         }
     }
     if ($XPathJsonConfigString) {
+        Write-Host "HereC"
         # Make sure the string is valid Json
         try {
             $JsonAsPSObject = $XPathJsonConfigString | ConvertFrom-Json -ErrorAction Stop
@@ -595,6 +373,7 @@ function Get-SiteAsJson {
 
     # Check to see if a Project folder of the same name as $SiteName exists in either the current directory or the Parent Directory of $NewProjectDirectory
     if (!$NewProjectDirectory) {
+        Write-Host "HereD"
         $PotentialProjectDirectories = @($(Get-ChildItem -Directory))
         if ($PotentialProjectDirectories.Name -contains $SiteName) {
             $DirItem = $PotentialProjectDirectories | Where-Object {$_.Name -eq $SiteName}
@@ -607,6 +386,7 @@ function Get-SiteAsJson {
         }
     }
     else {
+        Write-Host "HereE"
         $PotentialProjectDirParentDir = $NewProjectDirectory | Split-Path -Parent
         $PotentialProjectDirName = $NewProjectDirectory | Split-Path -Leaf
 
@@ -626,7 +406,9 @@ function Get-SiteAsJson {
 
     # If an appropriate Project Folder doesn't already exist, create one
     if (!$ProjectDirectoryItem) {
+        Write-Host "HereF"
         if (!$NewProjectDirectory) {
+            Write-Host "HereG"
             $CurrentProjectDirectories = @($(Get-ChildItem -Directory).Name)
             if ($CurrentProjectDirectories.Count -gt 0) {
                 $DirectoryName = NewUniqueString -ArrayOfStrings $CurrentProjectDirectories -PossibleNewUniqueString $SiteName
@@ -634,9 +416,10 @@ function Get-SiteAsJson {
             else {
                 $DirectoryName = $SiteName
             }
-            $NewProjectDirectory = $pwd.Path + $DirSep + $DirectoryName
+            $NewProjectDirectory = $(Get-Location).Path + $DirSep + $DirectoryName
         }
         else {
+            Write-Host "HereH"
             $NewProjectParentDir = $NewProjectDirectory | Split-Path -Parent
             if (!$(Test-Path $NewProjectParentDir)) {
                 Write-Error "Unable to find the path $NewProjectParentDir! Halting!"
@@ -655,6 +438,7 @@ function Get-SiteAsJson {
         }
 
         if (!$(Test-Path $NewProjectDirectory)) {
+            Write-Host "HereI"
             try {
                 $ProjectDirectoryItem = New-Item -ItemType Directory -Path $NewProjectDirectory -ErrorAction Stop
             }
@@ -677,7 +461,7 @@ function Get-SiteAsJson {
         $null = dotnet build
         $TestRun = dotnet run
         if ($TestRun -ne "Hello World!") {
-            Write-Error "There was an issue creating a new dotnet console app in '$($pwd.Path)'! Halting!"
+            Write-Error "There was an issue creating a new dotnet console app in '$($(Get-Location).Path)'! Halting!"
             $global:FunctionResult = "1"
             return
         }
@@ -685,6 +469,9 @@ function Get-SiteAsJson {
     else {
         Push-Location $ProjectDirectoryItem.FullName
     }
+
+    Write-Host "HereJ"
+    Write-Host "ProjectDirectoryItem.FullName is $($ProjectDirectoryItem.FullName)"
 
     # Install any NuGetPackage dependencies
     # These packages will be found under $HOME/.nuget/packages/ after install, so they're not project specific
@@ -700,6 +487,8 @@ function Get-SiteAsJson {
         }
     }
 
+    Write-Host "HereK"
+
     # Create Directory that will contain our .csx script and html parsing json config file (for example, dotnetapis.com.json)
     $WorkingDir = $ProjectDirectoryItem.FullName + $DirSep + "ScriptsConfigsAndOutput"
     if (!$(Test-Path $WorkingDir)) {
@@ -713,59 +502,30 @@ function Get-SiteAsJson {
         }
     }
 
+    Write-Host "HereL"
+
     Push-Location $WorkingDir
+
+    Write-Host "HereM"
 
     # NOTE: OpenScraping 1.3.0 also installs System.Net.Http 4.3.2, System.Xml.XPath.XmlDocument 4.3.0, and HtmlAgilityPack 1.8.10
 
     $CSharpScriptPath = $WorkingDir + $DirSep + "$SiteName.csx"
     $HtmlParsingJsonConfigPath = $WorkingDir + $DirSep + "$SiteName.json"
 
+    Write-Host "WorkingDir is $WorkingDir"
+    Write-Host "CSharpScriptPath is $CSharpScriptPath"
+
+    Write-Host "HereN"
+
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
-        $LuaScriptPSObjs = $(Get-Module HTMLToJson).Invoke({$LuaScriptPSObjects})
+        $LuaScriptPSObjs = $(Get-Module SiteScraping).Invoke({$LuaScriptPSObjects})
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
-
-        <#
-        $LuaScript = @"
-function main(splash)
-    local scroll_delay = 1
-    local previous_height = -1
-    local number_of_scrolls = 0
-    local maximal_number_of_scrolls = 99
-
-    local scroll_to = splash:jsfunc(""window.scrollTo"")
-    local get_body_height = splash:jsfunc(
-        ""function() {return document.body.scrollHeight;}""
-    )
-    local get_inner_height = splash:jsfunc(
-        ""function() {return window.innerHeight;}""
-    )
-    local get_body_scroll_top = splash:jsfunc(
-        ""function() {return document.body.scrollTop;}""
-    )
-    assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
-
-    while true do
-        local body_height = get_body_height()
-        local current = get_inner_height() - get_body_scroll_top()
-        scroll_to(0, body_height)
-        number_of_scrolls = number_of_scrolls + 1
-        if number_of_scrolls == maximal_number_of_scrolls then
-            break
-        end
-        splash:wait(scroll_delay)
-        local new_body_height = get_body_height()
-        if new_body_height - body_height <= 0 then
-            break
-        end
-    end        
-    return splash:html()
-end
-"@
-    #>
     }
+
+    Write-Host "HereO"
 
     if ($LuaScript) {
         $SplashEndPointString = 'string splashEndpoint = @"execute";'
@@ -777,6 +537,8 @@ end
         $PostDataString = 'var postData = JsonConvert.SerializeObject(new { url = url, timeout = 10, wait = 3 });'
         $FinalLuaScript = 'null'
     }
+
+    Write-Host "HereP"
 
     # Write the CSharp Script
     $CSharpScript = @"
@@ -801,7 +563,7 @@ if (scrapeJavaScript)
 {
     string url = @"$UrlString";
     // Get Splash here: https://splash.readthedocs.io/en/stable/install.html
-    string splashServer = @"http://localhost:8050/";
+    string splashServer = @"$SplashServerUriString/";
     $SplashEndPointString
     string splashFinalUrl = splashServer + splashEndpoint;
     var request = (HttpWebRequest)WebRequest.Create(splashFinalUrl);
@@ -852,6 +614,8 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 
     #Write-Host $CSharpScript
 
+    Write-Host "HereQ"
+
     Set-Content -Path $CSharpScriptPath -Value $CSharpScript
 
     if ($XPathJsonConfigFile) {
@@ -861,16 +625,23 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
         $HtmlParsingJsonConfig = $XPathJsonConfigString
     }
 
+    Write-Host "HereR"
+
     Set-Content -Path $HtmlParsingJsonConfigPath -Value $HtmlParsingJsonConfig
+
+    Write-Host "HereS"
 
     # Json Output
     dotnet-script $CSharpScriptPath
 
     # Cleanup
+    Write-Host "HereT"
     if ($RemoveFileOutputs) {
+        Write-Host "HereU"
         $HtmlFile = $WorkingDir + $DirSep + "$SiteName.html"
         $FilesToRemove = @($HtmlFile,$CSharpScriptPath,$HtmlParsingJsonConfigPath)
         foreach ($FilePath in $FilesToRemove) {
+            Write-Host "HereV"
             $null = Remove-Item -Path $FilePath -Force
         }
     }
@@ -900,7 +671,7 @@ function Install-Docker {
     Param()
 
     if (!$($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin")) {
-        Write-Error "The $($MyInvocation.MyCommand.Name) function from the HTMLToJson Module should only be used on Linux! Halting!"
+        Write-Error "The $($MyInvocation.MyCommand.Name) function from the SiteScraping Module should only be used on Linux! Halting!"
         $global:FunctionResult = "1"
         return
     }
@@ -1134,7 +905,7 @@ function Install-Docker {
     .EXAMPLE
         # Launch PowerShell and ...
 
-        PS C:\Users\zeroadmin> Install-DotNetSscript
+        PS C:\Users\zeroadmin> Install-DotNetScript
 #>
 function Install-DotNetScript {
     [CmdletBinding()]
@@ -1147,6 +918,16 @@ function Install-DotNetScript {
     }
 
     dotnet tool install -g dotnet-script
+
+    # $HOME/.dotnet/tools
+    $DirSep = [System.IO.Path]::DirectorySeparatorChar
+    $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
+        $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
+        $env:Path = $CurrentEnvPathArray -join ';'
+    }
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
         Write-Error "Something went wrong during installation of 'dotnet-script' via the dotnet cli. Please review the above output. Halting!"
@@ -1507,9 +1288,6 @@ if ($PSVersionTable.Platform -eq "Win32NT" -and $PSVersionTable.PSEdition -eq "C
     ${Function:TestIsValidIPAddress}.Ast.Extent.Text
     ${Function:VariableLibraryTemplate}.Ast.Extent.Text
     ${Function:Deploy-SplashContainer}.Ast.Extent.Text
-    ${Function:Get-JWGenres}.Ast.Extent.Text
-    ${Function:Get-JWMedia}.Ast.Extent.Text
-    ${Function:Get-JWStreamingServices}.Ast.Extent.Text
     ${Function:Get-SiteAsJson}.Ast.Extent.Text
     ${Function:Install-Docker}.Ast.Extent.Text
     ${Function:Install-DotNetScript}.Ast.Extent.Text
@@ -1571,8 +1349,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUiEGg9zDn+YAe9YfyixrBi0Os
-# cQmgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUaQlPr/HrfjLuECo5L7j43T6r
+# lc+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1629,11 +1407,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFLEt+An/vTbc69iO
-# x8a8NRvVoQbfMA0GCSqGSIb3DQEBAQUABIIBAMIvzb/ZxTkOaXw6Ku2Gkeh6YNxg
-# wSPk4Spr52endthFuiCVwV/WJ6D0vBh3h9Fxr6BG/pjvv721XcYyIoRX29XoZHJo
-# h18N4PIUKdMPpziiSYH+ykmZZcBP/0adR1SMwIg1jXFwUAgjQdvFavYyRTpWFFGU
-# ccWeIT/xhoOOXOyKcazmGgdcCwWrPMzlYAi1mAgX7fwjSOpNXih8qf2T5YtAYizt
-# AtqM7gtsGnjQHky+hrcod3tK7VYcdfIi7ZmCk6oe/TDopSLtetYaGfv7o3PeyLyr
-# FsU9eLwOzzrzLaIgU91SATToKemWILIs3Tp07NZpzkD3dZABOPXiwJyLOqE=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFKvRRhksx23EZB3F
+# zK7U6ttl6d19MA0GCSqGSIb3DQEBAQUABIIBALDZUGKUBUDAvrmrhgyiWO1aqkOj
+# tZKDWAnEUYoF8TlQHiICa027IYG82VRoveVoeGBbp3n/QgRi7b0ZxwRDjkURA4GH
+# wNOVqujh9qJ6w60HGHhHZ+3SykWwXwPN75kAwDcNyUGBMcAS+EC9StJuA2hj87BK
+# NHzgOC2wx+7LFl1gyCoAcPdtxjrW2zU7aRqMUVKnCBq7k0PK4U1EojDbzrouT3z0
+# UmjyV2JcnlcCICUkCMh4sUUVxM21a0EogH4aJi4Ecn6ablQh6iQWAblmBiDpJuIM
+# b/7IQEg6T0gSqTVY+i1iZmOudDUficsn1FEsbA60Lj9Hn3CTcC9zpRdomsk=
 # SIG # End signature block

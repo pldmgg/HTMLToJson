@@ -131,13 +131,67 @@ function Get-SiteAsJson {
         [switch]$RemoveFileOutputs
     )
 
+    # Make sure we have dotnet and dotnet-script in our $env:Path
+    $DirSep = [IO.Path]::DirectorySeparatorChar
+
+    if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
+        $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+
+        if (!$(Test-Path $DotNetToolsDir)) {
+            Write-Error "Unable to find '$DotNetToolsDir'! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
+            $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
+            $env:Path = $CurrentEnvPathArray -join ';'
+        }
+    }
+    if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
+        Write-Error "Unable to find 'dotnet-script' binary! Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
+
+    if (!$PSVersionTable.Platform -or $PSVersionTable.Platform -eq "Win32NT") {
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            $DotNetDir = "C:\Program Files\dotnet"
+
+            if (!$(Test-Path $DotNetDir)) {
+                Write-Error "Unable to find '$DotNetDir'! Halting!"
+                $global:FunctionResult = "1"
+                return
+            }
+
+            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+            if ($CurrentEnvPathArray -notcontains $DotNetDir) {
+                $CurrentEnvPathArray.Insert(0,$DotNetDir)
+                $env:Path = $CurrentEnvPathArray -join ';'
+            }
+        }
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Error "Unable to find 'dotnet' binary! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+    }
+    if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {
+        if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+            Write-Error "Unable to find 'dotnet' binary! Halting!"
+            $global:FunctionResult = "1"
+            return
+        }
+    }
+
     if (!$XPathJsonConfigFile -and !$XPathJsonConfigString) {
         Write-Error "The $($MyInvocation.MyCommand.Name) function requires either the -XPathJsonConfigString or the -XPathJsonConfigFile parameter! Halting!"
         $global:FunctionResult = "1"
         return
     }
 
-    $DirSep = [IO.Path]::DirectorySeparatorChar
+    Write-Host "HereA"
 
     $UrlString = $Url.OriginalString
     if ($UrlString[-1] -ne '/') {
@@ -149,6 +203,8 @@ function Get-SiteAsJson {
     $SiteNamePrep = @($($Url.OriginalString -split '/' | Where-Object {$_ -notmatch 'http' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
     $SiteName = @($($SiteNamePrep -split '\.' | Where-Object {$_ -notmatch 'www' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
 
+    Write-Host "HereB"
+
     if (!$SiteName) {
         Write-Error "Unable to parse site domain name from the value provided to the -Url parameter! Halting!"
         $global:FunctionResult = "1"
@@ -156,6 +212,8 @@ function Get-SiteAsJson {
     }
 
     if ($XPathJsonConfigFile) {
+        Write-Host "HereB1"
+        Write-Host "XPathJsonConfigFile is: $XPathJsonConfigFile"
         try {
             $XPathJsonConfigFile = $(Resolve-Path $XPathJsonConfigFile -ErrorAction Stop).Path
         }
@@ -177,6 +235,7 @@ function Get-SiteAsJson {
         }
     }
     if ($XPathJsonConfigString) {
+        Write-Host "HereC"
         # Make sure the string is valid Json
         try {
             $JsonAsPSObject = $XPathJsonConfigString | ConvertFrom-Json -ErrorAction Stop
@@ -190,6 +249,7 @@ function Get-SiteAsJson {
 
     # Check to see if a Project folder of the same name as $SiteName exists in either the current directory or the Parent Directory of $NewProjectDirectory
     if (!$NewProjectDirectory) {
+        Write-Host "HereD"
         $PotentialProjectDirectories = @($(Get-ChildItem -Directory))
         if ($PotentialProjectDirectories.Name -contains $SiteName) {
             $DirItem = $PotentialProjectDirectories | Where-Object {$_.Name -eq $SiteName}
@@ -202,6 +262,7 @@ function Get-SiteAsJson {
         }
     }
     else {
+        Write-Host "HereE"
         $PotentialProjectDirParentDir = $NewProjectDirectory | Split-Path -Parent
         $PotentialProjectDirName = $NewProjectDirectory | Split-Path -Leaf
 
@@ -221,7 +282,9 @@ function Get-SiteAsJson {
 
     # If an appropriate Project Folder doesn't already exist, create one
     if (!$ProjectDirectoryItem) {
+        Write-Host "HereF"
         if (!$NewProjectDirectory) {
+            Write-Host "HereG"
             $CurrentProjectDirectories = @($(Get-ChildItem -Directory).Name)
             if ($CurrentProjectDirectories.Count -gt 0) {
                 $DirectoryName = NewUniqueString -ArrayOfStrings $CurrentProjectDirectories -PossibleNewUniqueString $SiteName
@@ -229,9 +292,10 @@ function Get-SiteAsJson {
             else {
                 $DirectoryName = $SiteName
             }
-            $NewProjectDirectory = $pwd.Path + $DirSep + $DirectoryName
+            $NewProjectDirectory = $(Get-Location).Path + $DirSep + $DirectoryName
         }
         else {
+            Write-Host "HereH"
             $NewProjectParentDir = $NewProjectDirectory | Split-Path -Parent
             if (!$(Test-Path $NewProjectParentDir)) {
                 Write-Error "Unable to find the path $NewProjectParentDir! Halting!"
@@ -250,6 +314,7 @@ function Get-SiteAsJson {
         }
 
         if (!$(Test-Path $NewProjectDirectory)) {
+            Write-Host "HereI"
             try {
                 $ProjectDirectoryItem = New-Item -ItemType Directory -Path $NewProjectDirectory -ErrorAction Stop
             }
@@ -272,7 +337,7 @@ function Get-SiteAsJson {
         $null = dotnet build
         $TestRun = dotnet run
         if ($TestRun -ne "Hello World!") {
-            Write-Error "There was an issue creating a new dotnet console app in '$($pwd.Path)'! Halting!"
+            Write-Error "There was an issue creating a new dotnet console app in '$($(Get-Location).Path)'! Halting!"
             $global:FunctionResult = "1"
             return
         }
@@ -280,6 +345,9 @@ function Get-SiteAsJson {
     else {
         Push-Location $ProjectDirectoryItem.FullName
     }
+
+    Write-Host "HereJ"
+    Write-Host "ProjectDirectoryItem.FullName is $($ProjectDirectoryItem.FullName)"
 
     # Install any NuGetPackage dependencies
     # These packages will be found under $HOME/.nuget/packages/ after install, so they're not project specific
@@ -295,6 +363,8 @@ function Get-SiteAsJson {
         }
     }
 
+    Write-Host "HereK"
+
     # Create Directory that will contain our .csx script and html parsing json config file (for example, dotnetapis.com.json)
     $WorkingDir = $ProjectDirectoryItem.FullName + $DirSep + "ScriptsConfigsAndOutput"
     if (!$(Test-Path $WorkingDir)) {
@@ -308,12 +378,21 @@ function Get-SiteAsJson {
         }
     }
 
+    Write-Host "HereL"
+
     Push-Location $WorkingDir
+
+    Write-Host "HereM"
 
     # NOTE: OpenScraping 1.3.0 also installs System.Net.Http 4.3.2, System.Xml.XPath.XmlDocument 4.3.0, and HtmlAgilityPack 1.8.10
 
     $CSharpScriptPath = $WorkingDir + $DirSep + "$SiteName.csx"
     $HtmlParsingJsonConfigPath = $WorkingDir + $DirSep + "$SiteName.json"
+
+    Write-Host "WorkingDir is $WorkingDir"
+    Write-Host "CSharpScriptPath is $CSharpScriptPath"
+
+    Write-Host "HereN"
 
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
@@ -321,6 +400,8 @@ function Get-SiteAsJson {
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
     }
+
+    Write-Host "HereO"
 
     if ($LuaScript) {
         $SplashEndPointString = 'string splashEndpoint = @"execute";'
@@ -332,6 +413,8 @@ function Get-SiteAsJson {
         $PostDataString = 'var postData = JsonConvert.SerializeObject(new { url = url, timeout = 10, wait = 3 });'
         $FinalLuaScript = 'null'
     }
+
+    Write-Host "HereP"
 
     # Write the CSharp Script
     $CSharpScript = @"
@@ -407,6 +490,8 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 
     #Write-Host $CSharpScript
 
+    Write-Host "HereQ"
+
     Set-Content -Path $CSharpScriptPath -Value $CSharpScript
 
     if ($XPathJsonConfigFile) {
@@ -416,16 +501,23 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
         $HtmlParsingJsonConfig = $XPathJsonConfigString
     }
 
+    Write-Host "HereR"
+
     Set-Content -Path $HtmlParsingJsonConfigPath -Value $HtmlParsingJsonConfig
+
+    Write-Host "HereS"
 
     # Json Output
     dotnet-script $CSharpScriptPath
 
     # Cleanup
+    Write-Host "HereT"
     if ($RemoveFileOutputs) {
+        Write-Host "HereU"
         $HtmlFile = $WorkingDir + $DirSep + "$SiteName.html"
         $FilesToRemove = @($HtmlFile,$CSharpScriptPath,$HtmlParsingJsonConfigPath)
         foreach ($FilePath in $FilesToRemove) {
+            Write-Host "HereV"
             $null = Remove-Item -Path $FilePath -Force
         }
     }
@@ -438,8 +530,8 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQpJJo2ff25kqTd5nyxx3s1eV
-# mJigggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjeNg8WMPC9PRCAoYaMBwtX89
+# zZagggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -496,11 +588,11 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFGS7YIBsu+SkKmOr
-# 8ipEYmRI9Yu7MA0GCSqGSIb3DQEBAQUABIIBAJdVh1DB5Yk6HXgWpzmUicxsTvPk
-# ex99cWZAnAVt38yVOR3QgXJ/pkx0Cw9sfBKJ20rkkqJXbCPhx+Xx02dPlXGssJ4+
-# haKb4sTMwffdH+Ey2tctxYB5MUIZKitH8Qxul/vKTrQm1n76GJgwO36XPRBErwDt
-# nRjNMcq15nYOX8H0X5jEh66ffKjodC9g+Wu1X/7AxkfrCONusjkcjzK7i5KwkIN5
-# nSV1OLhIwYJ5nbRbic3+oDxtd1KAg8KX/GjOpfNMCWRk1ZqNvHz0mXiyw/42/UKg
-# WNv0fg2szU6cQlzlduWIR6p02qietEHYPQUwXgPr7TOqCsqM/dh7hlnKMlY=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFKO/nUGmu74ifBlW
+# ojDylFeKEgJ5MA0GCSqGSIb3DQEBAQUABIIBAH/2JgX3E6tM8Q0/9egVRx7/8wn4
+# s4PlJi2O3Xsg+YQAIRw4hkp2d5qQFx3gtYAw5GSLswiaJfa81BrDSj2qAM+gOECM
+# rRlR0az4YaRFsVlRLB24KqiQxSYAH9z3HSWC/W/xh6QZERsm6NcHmBQnsN1rGhEK
+# tF8HY6gxtz+fUvvZudEQsNFg9vGEiV03193LiiREC9nHCelJkk7pdkgeTKR1jN79
+# fSkhiwIzi4sPHAeBdSiyfZadXHha1A/S6vAfexGkd8OmjQf24dWdV+YpOdVgygfk
+# bwWgbC7+4r2zCcChneALhcXtHhoT+XTqwAkNhbPhob1oG2QIIaABdKvXdCE=
 # SIG # End signature block

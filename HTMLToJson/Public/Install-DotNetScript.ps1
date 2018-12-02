@@ -10,7 +10,7 @@
     .EXAMPLE
         # Launch PowerShell and ...
 
-        PS C:\Users\zeroadmin> Install-DotNetSscript
+        PS C:\Users\zeroadmin> Install-DotNetScript
 #>
 function Install-DotNetScript {
     [CmdletBinding()]
@@ -24,6 +24,16 @@ function Install-DotNetScript {
 
     dotnet tool install -g dotnet-script
 
+    # $HOME/.dotnet/tools
+    $DirSep = [System.IO.Path]::DirectorySeparatorChar
+    $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
+        $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
+        $env:Path = $CurrentEnvPathArray -join ';'
+    }
+
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
         Write-Error "Something went wrong during installation of 'dotnet-script' via the dotnet cli. Please review the above output. Halting!"
         $global:FunctionResult = "1"
@@ -34,8 +44,8 @@ function Install-DotNetScript {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVUVC+6E4ZHJNVb0nnoLJMuiU
-# gMWgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULu8lnrox7JGux3tu7tgBbKvM
+# Lt+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -92,11 +102,11 @@ function Install-DotNetScript {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFK5zdOKPrggQsJ6
-# Q9Qto0KABOYBMA0GCSqGSIb3DQEBAQUABIIBAK29dlZYFgaODUznJe88hMxBUh6A
-# rDkkIixvg2yrtXHyf9+jK5SZc8mPt5zPFo6bVOjJfUM3ntanwnGvHyZqCFtf3cB2
-# 4FhBLsDn2xmZYDmPkwsjvDo6cSb9GNHMLDQLzkgZpS44dwG6hkG/d+KfPkC5xEAg
-# Ax79EBk8/gUCl+/3b19ZVnxLz82QOsvL1vE9KWwjMwqSuHXu4lrWteKzAl6XU4P9
-# K/oZLhAy+XRXXsDqtW3v5c3CpP14Co8wneFO0ieP0yJHDafQPq3DWkBwRlP3Cyti
-# QbYVG8w3RokG2SU8+pUjChBhAAxqkTPjoRsRiq26ZumGnAim/i+LZoIzvHM=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCwseQurf1r6i0hF
+# HlPzuuUUSeQUMA0GCSqGSIb3DQEBAQUABIIBAC1ZXMG9ZoOCyGN8d9N56LjnQDxA
+# v7cgTy46TnqRKLmbJcb6+fFZ8Eux0QEhav3QOO/xcTOJ88yuyMV6xT3KLVZVzNeR
+# J8vmz0eaObH2S7y6DEwcbVoQPqe/X7hHG7M4+IB05RMT4dQPuUy4a9VDXUp9Wh2f
+# 9coedrxQGGSP9wRjBAUo0CiVBOLGA3XqBkCXkx3BAsuoH4U7DiQQFOczIvGBGCfs
+# kldAQ+XggCG1c55g1SLtbowmNAy5a2021Txh+AYVsjxkTWHDURIOrmoCP5/mUfo/
+# XxIM6NVacpdQ2zxKVkLY6pdRcWbF5a6anEd3I4ykwtMSxjTLaOI5wEHqR80=
 # SIG # End signature block
