@@ -1,0 +1,9 @@
+{
+    "title": "//*[@id='app']/div/div/div[2]/div[3]/div/div/div/div/h1",
+    "VisibleAPIs": {
+        "_xpath": "//a[(@class='list-group-item')]",
+        "APIName": ".//h3",
+        "APIVersion": ".//p//code//span[normalize-space()][2]",
+        "APIDescription": ".//p[(@class='list-group-item-text')]"
+    }
+}
