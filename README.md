@@ -41,8 +41,7 @@ PS C:\Users\zeroadmin> $JsonXPathConfigString = @"
     }
 }
 "@
-PS C:\Users\zeroadmin> Get-SiteAsJson -Url 'http://dotnetapis.com/' -XPathJsonConfigString $JsonXPathConfigString -SplashServerUri 'http://192.168.2.60:8050'
-
+PS C:\Users\zeroadmin> Get-SiteAsJson -Url 'http://dotnetapis.com/' -XPathJsonConfigString $JsonXPathConfigString -SplashServerUri 'http://192.168.2.50:8050'
 {
     "title": "DotNetApis (BETA)",
     "VisibleAPIs": [

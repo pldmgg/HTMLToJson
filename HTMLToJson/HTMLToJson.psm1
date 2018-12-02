@@ -172,6 +172,12 @@ function Deploy-SplashContainer {
 
         This parameter takes a string that represents a path to a a .json file that contains XPath parsing instructions for -Url.
 
+    .PARAMETER LuaScript
+        This parameter is OPTIONAL.
+
+        This parameter takes a string (heredoc recommended) that represents a Lua Script that instructs the Splash Server to take certain actions
+        on a webpage before returning the rendered html to be parsed.
+
     .PARAMETER HandleInfiniteScrolling
         This parameter is OPTIONAL.
 
@@ -246,6 +252,9 @@ function Get-SiteAsJson {
         [string]$XPathJsonConfigFile,
 
         [Parameter(Mandatory=$False)]
+        [string]$LuaScript,
+        
+        [Parameter(Mandatory=$False)]
         [switch]$HandleInfiniteScrolling,
 
         [Parameter(Mandatory=$False)]
@@ -315,7 +324,11 @@ function Get-SiteAsJson {
         return
     }
 
-    Write-Host "HereA"
+    if ($HandleInfiniteScrolling -and $LuaScript) {
+        Write-Error "Please use *either* the -HandleInfiniteScrolling *or* the -LuaScript parameter. Halting!"
+        $global:FunctionResult = "1"
+        return
+    }
 
     $UrlString = $Url.OriginalString
     if ($UrlString[-1] -ne '/') {
@@ -327,8 +340,6 @@ function Get-SiteAsJson {
     $SiteNamePrep = @($($Url.OriginalString -split '/' | Where-Object {$_ -notmatch 'http' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
     $SiteName = @($($SiteNamePrep -split '\.' | Where-Object {$_ -notmatch 'www' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
 
-    Write-Host "HereB"
-
     if (!$SiteName) {
         Write-Error "Unable to parse site domain name from the value provided to the -Url parameter! Halting!"
         $global:FunctionResult = "1"
@@ -336,8 +347,6 @@ function Get-SiteAsJson {
     }
 
     if ($XPathJsonConfigFile) {
-        Write-Host "HereB1"
-        Write-Host "XPathJsonConfigFile is: $XPathJsonConfigFile"
         try {
             $XPathJsonConfigFile = $(Resolve-Path $XPathJsonConfigFile -ErrorAction Stop).Path
         }
@@ -359,7 +368,6 @@ function Get-SiteAsJson {
         }
     }
     if ($XPathJsonConfigString) {
-        Write-Host "HereC"
         # Make sure the string is valid Json
         try {
             $JsonAsPSObject = $XPathJsonConfigString | ConvertFrom-Json -ErrorAction Stop
@@ -373,7 +381,6 @@ function Get-SiteAsJson {
 
     # Check to see if a Project folder of the same name as $SiteName exists in either the current directory or the Parent Directory of $NewProjectDirectory
     if (!$NewProjectDirectory) {
-        Write-Host "HereD"
         $PotentialProjectDirectories = @($(Get-ChildItem -Directory))
         if ($PotentialProjectDirectories.Name -contains $SiteName) {
             $DirItem = $PotentialProjectDirectories | Where-Object {$_.Name -eq $SiteName}
@@ -386,7 +393,6 @@ function Get-SiteAsJson {
         }
     }
     else {
-        Write-Host "HereE"
         $PotentialProjectDirParentDir = $NewProjectDirectory | Split-Path -Parent
         $PotentialProjectDirName = $NewProjectDirectory | Split-Path -Leaf
 
@@ -406,9 +412,7 @@ function Get-SiteAsJson {
 
     # If an appropriate Project Folder doesn't already exist, create one
     if (!$ProjectDirectoryItem) {
-        Write-Host "HereF"
         if (!$NewProjectDirectory) {
-            Write-Host "HereG"
             $CurrentProjectDirectories = @($(Get-ChildItem -Directory).Name)
             if ($CurrentProjectDirectories.Count -gt 0) {
                 $DirectoryName = NewUniqueString -ArrayOfStrings $CurrentProjectDirectories -PossibleNewUniqueString $SiteName
@@ -419,7 +423,6 @@ function Get-SiteAsJson {
             $NewProjectDirectory = $(Get-Location).Path + $DirSep + $DirectoryName
         }
         else {
-            Write-Host "HereH"
             $NewProjectParentDir = $NewProjectDirectory | Split-Path -Parent
             if (!$(Test-Path $NewProjectParentDir)) {
                 Write-Error "Unable to find the path $NewProjectParentDir! Halting!"
@@ -438,7 +441,6 @@ function Get-SiteAsJson {
         }
 
         if (!$(Test-Path $NewProjectDirectory)) {
-            Write-Host "HereI"
             try {
                 $ProjectDirectoryItem = New-Item -ItemType Directory -Path $NewProjectDirectory -ErrorAction Stop
             }
@@ -470,9 +472,6 @@ function Get-SiteAsJson {
         Push-Location $ProjectDirectoryItem.FullName
     }
 
-    Write-Host "HereJ"
-    Write-Host "ProjectDirectoryItem.FullName is $($ProjectDirectoryItem.FullName)"
-
     # Install any NuGetPackage dependencies
     # These packages will be found under $HOME/.nuget/packages/ after install, so they're not project specific
     # However, first make sure the project doesn't already include these packages
@@ -487,8 +486,6 @@ function Get-SiteAsJson {
         }
     }
 
-    Write-Host "HereK"
-
     # Create Directory that will contain our .csx script and html parsing json config file (for example, dotnetapis.com.json)
     $WorkingDir = $ProjectDirectoryItem.FullName + $DirSep + "ScriptsConfigsAndOutput"
     if (!$(Test-Path $WorkingDir)) {
@@ -502,21 +499,12 @@ function Get-SiteAsJson {
         }
     }
 
-    Write-Host "HereL"
-
     Push-Location $WorkingDir
-
-    Write-Host "HereM"
 
     # NOTE: OpenScraping 1.3.0 also installs System.Net.Http 4.3.2, System.Xml.XPath.XmlDocument 4.3.0, and HtmlAgilityPack 1.8.10
 
     $CSharpScriptPath = $WorkingDir + $DirSep + "$SiteName.csx"
     $HtmlParsingJsonConfigPath = $WorkingDir + $DirSep + "$SiteName.json"
-
-    Write-Host "WorkingDir is $WorkingDir"
-    Write-Host "CSharpScriptPath is $CSharpScriptPath"
-
-    Write-Host "HereN"
 
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
@@ -524,8 +512,6 @@ function Get-SiteAsJson {
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
     }
-
-    Write-Host "HereO"
 
     if ($LuaScript) {
         $SplashEndPointString = 'string splashEndpoint = @"execute";'
@@ -537,8 +523,6 @@ function Get-SiteAsJson {
         $PostDataString = 'var postData = JsonConvert.SerializeObject(new { url = url, timeout = 10, wait = 3 });'
         $FinalLuaScript = 'null'
     }
-
-    Write-Host "HereP"
 
     # Write the CSharp Script
     $CSharpScript = @"
@@ -612,10 +596,6 @@ var scrapingResults = openScraping.Extract(html);
 Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.Formatting.Indented));
 "@
 
-    #Write-Host $CSharpScript
-
-    Write-Host "HereQ"
-
     Set-Content -Path $CSharpScriptPath -Value $CSharpScript
 
     if ($XPathJsonConfigFile) {
@@ -625,24 +605,19 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
         $HtmlParsingJsonConfig = $XPathJsonConfigString
     }
 
-    Write-Host "HereR"
-
     Set-Content -Path $HtmlParsingJsonConfigPath -Value $HtmlParsingJsonConfig
-
-    Write-Host "HereS"
 
     # Json Output
     dotnet-script $CSharpScriptPath
 
     # Cleanup
-    Write-Host "HereT"
     if ($RemoveFileOutputs) {
-        Write-Host "HereU"
         $HtmlFile = $WorkingDir + $DirSep + "$SiteName.html"
         $FilesToRemove = @($HtmlFile,$CSharpScriptPath,$HtmlParsingJsonConfigPath)
         foreach ($FilePath in $FilesToRemove) {
-            Write-Host "HereV"
-            $null = Remove-Item -Path $FilePath -Force
+            if (Test-Path $FilePath) {
+                $null = Remove-Item -Path $FilePath -Force
+            }
         }
     }
 
@@ -1349,8 +1324,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUaQlPr/HrfjLuECo5L7j43T6r
-# lc+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJn/kb0RMBCRhW4Q0kgKDUntI
+# QQOgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1407,11 +1382,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFKvRRhksx23EZB3F
-# zK7U6ttl6d19MA0GCSqGSIb3DQEBAQUABIIBALDZUGKUBUDAvrmrhgyiWO1aqkOj
-# tZKDWAnEUYoF8TlQHiICa027IYG82VRoveVoeGBbp3n/QgRi7b0ZxwRDjkURA4GH
-# wNOVqujh9qJ6w60HGHhHZ+3SykWwXwPN75kAwDcNyUGBMcAS+EC9StJuA2hj87BK
-# NHzgOC2wx+7LFl1gyCoAcPdtxjrW2zU7aRqMUVKnCBq7k0PK4U1EojDbzrouT3z0
-# UmjyV2JcnlcCICUkCMh4sUUVxM21a0EogH4aJi4Ecn6ablQh6iQWAblmBiDpJuIM
-# b/7IQEg6T0gSqTVY+i1iZmOudDUficsn1FEsbA60Lj9Hn3CTcC9zpRdomsk=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFOvIwrCz7qAASDvU
+# MRvrlMq0boevMA0GCSqGSIb3DQEBAQUABIIBAEJ8y4QnhLQv0PXIiWj4yilWrVPS
+# JrGiYL+sviLaUmcNHkSelrbUjnV+/pey7OwSlZOFEYTRqtiMJgMRIhMHGFkZjFkS
+# eW3uIU2zfU/m7pOTvnhqPFUJdwat4Qz6xHDhlCWl5jlq6sGxmh5OWMxVvRPvAhNf
+# XGdsUe1GBRca4xaveDzYZtCVPged1g9JEMd9Dfd93pMb7dhu2kTspo3dCaCpQkcx
+# 9PGk59Vn4bNQA7wPbti9KsJ23hjoFoFDfMIfUXRYoQFhLiUpsNrE0A05i01SL9a9
+# 0SW6T16/Jspun2UsWEhAJTb+i5BnIZo7pWTkTYhhAa649QZmFldQkYetuvI=
 # SIG # End signature block
