@@ -384,7 +384,7 @@ function Get-SiteAsJson {
 
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
-        $LuaScriptPSObjs = $(Get-Module SiteScraping).Invoke({$LuaScriptPSObjects})
+        $LuaScriptPSObjs = $(Get-Module HTMLToJson).Invoke({$LuaScriptPSObjects})
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
     }
@@ -505,8 +505,8 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9Hh1QgJvmrJNnV8XSmNzqVAO
-# pdagggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUShjyow3bRTfA1Cn2hS/BQ3Ls
+# Ypigggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -563,11 +563,11 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFH+PgO6mWZek58ht
-# yO4J9xWqtbOaMA0GCSqGSIb3DQEBAQUABIIBAHyo/AnG/5qQbS82Uh30PrA8A91t
-# QhIU4rsvXrCraGQvwTtQ/QostzyaSz6IpA9CLNgZrVitl+OD07d7wPI/kd2XGnal
-# 7HbV79sAYOiSU/OWixJcP4VuoBMs8WnWb0qdwUjvc+WB7m2V3i3jXek655w0LEIl
-# OL5wJH1v53ez++XnJV14gVK/pTLmpluczpxi9Fgpo91/Gg7/KhX103mqnE9QSE6y
-# igfnliKqE1XXJ4i3hm9d/o3b5wUJOdCxZtsEWGlP4ypArTkPAXbe7PNODBc4lD79
-# koneWTv0G5zQLMfebxxrzgvURZwB0JHxyGh/mdNJ0s/YRA5rmeQiubo3muU=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFI9q3gl+aFuVlW4t
+# 2n3ATqNyLvL6MA0GCSqGSIb3DQEBAQUABIIBAGIqLmoM28SgNm5VcWpXgJH44IMd
+# p+4ZGpaZPvU6GsBgMX3htj8iF5Ud9ndtzEwhAS+nX6s3nFy7Ww5vaaGU0RKYoAi/
+# CsFkFESApWf+gghXOSZ2ipMUFsDTABJDpRK2lIuNEnwo0z/LvOW+kszGCIkcRaNA
+# BUdbv7iJ6A3f43zmw3NUd+RibfMTsrRwgHL7pXLFZ7C7BetyRnlXKtK1M+29e/eN
+# z3Ar7+tV0y3rfdg7TIEkdINqJum4ow92TJW45sVS5aTFr+eeuPgk2l7P2bUsfKb6
+# gCV8xA1PpGpQPF0W0kxYxLc9pOWT6EQB1aPqldDjT49vvive1LHEfExC9uE=
 # SIG # End signature block

@@ -508,7 +508,7 @@ function Get-SiteAsJson {
 
     if ($HandleInfiniteScrolling) {
         # Get the InfiniteScrolling Lua Script and double-up on the double quotes
-        $LuaScriptPSObjs = $(Get-Module SiteScraping).Invoke({$LuaScriptPSObjects})
+        $LuaScriptPSObjs = $(Get-Module HTMLToJson).Invoke({$LuaScriptPSObjects})
         $LuaScriptPrep = $($LuaScriptPSObjs | Where-Object {$_.LuaScriptName -eq 'InfiniteScrolling'}).LuaScriptContent
         $LuaScript = $LuaScriptPrep -replace '"','""'
     }
@@ -646,7 +646,7 @@ function Install-Docker {
     Param()
 
     if (!$($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin")) {
-        Write-Error "The $($MyInvocation.MyCommand.Name) function from the SiteScraping Module should only be used on Linux! Halting!"
+        Write-Error "The $($MyInvocation.MyCommand.Name) function from the HTMLToJson Module should only be used on Linux! Halting!"
         $global:FunctionResult = "1"
         return
     }
@@ -1324,8 +1324,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJn/kb0RMBCRhW4Q0kgKDUntI
-# QQOgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUudf5jGKHoSzEdr5UqUfmvORj
+# 94+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1382,11 +1382,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFOvIwrCz7qAASDvU
-# MRvrlMq0boevMA0GCSqGSIb3DQEBAQUABIIBAEJ8y4QnhLQv0PXIiWj4yilWrVPS
-# JrGiYL+sviLaUmcNHkSelrbUjnV+/pey7OwSlZOFEYTRqtiMJgMRIhMHGFkZjFkS
-# eW3uIU2zfU/m7pOTvnhqPFUJdwat4Qz6xHDhlCWl5jlq6sGxmh5OWMxVvRPvAhNf
-# XGdsUe1GBRca4xaveDzYZtCVPged1g9JEMd9Dfd93pMb7dhu2kTspo3dCaCpQkcx
-# 9PGk59Vn4bNQA7wPbti9KsJ23hjoFoFDfMIfUXRYoQFhLiUpsNrE0A05i01SL9a9
-# 0SW6T16/Jspun2UsWEhAJTb+i5BnIZo7pWTkTYhhAa649QZmFldQkYetuvI=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFM3zNYAPQF4WsNcn
+# C+ooSDNpb1RHMA0GCSqGSIb3DQEBAQUABIIBALlSA+c25Kd0/f4+44yd0umEJQE5
+# cYEmnMdDZcPGSht2mQKpucndkHog6aYN9vCKfaypLmuEf0gA0TshtkK6EX7y6q/J
+# 0PbUrXCmQavQbkihB/sFMww3n6PHxBSo3XFjoL+qDj8pS7X44uMPXuuiUfL1+xhg
+# 3X0W5+yrV+fxFXpY2Us3GDuxrbfuXXmHncVfv1gD/vJVB2NfzR3x572YpIMg37qj
+# xF/t+2Rt84ZhHysnRDkiMkI0x0VRYTfooNr8mtY/ePmQ0jKACyJDeVImq4edAcLJ
+# 0wrYx8Mnh32/+pHL8/GORmmumk6QYpXexbpumoqv8blqeQk6Ziwxkprr/Ig=
 # SIG # End signature block

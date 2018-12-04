@@ -22,7 +22,7 @@ function ScrubJsonUnicodeSymbols {
     '\u201C' = '"'
     '\u201D' = '"'
     #>
-    $UnicodeSymbolHT = $(Get-Module SiteScraping).Invoke({$UnicodeSymbolConversion})
+    $UnicodeSymbolHT = $(Get-Module HTMLToJson).Invoke({$UnicodeSymbolConversion})
     $JsonFileContent = Get-Content $FullJsonFilePath
 
     $UnicodeHTPairs = $UnicodeSymbolHT.GetEnumerator() 
@@ -39,8 +39,8 @@ function ScrubJsonUnicodeSymbols {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU4tpLb1ZvYWuQRMUJEaBzEAHv
-# NVKgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHZKwl4vzmIlkY2fx4+thmVZu
+# pPegggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -97,11 +97,11 @@ function ScrubJsonUnicodeSymbols {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFDn1Sc1AhlSmHYmS
-# Zdf41HGQR1j+MA0GCSqGSIb3DQEBAQUABIIBAAWpfLnnShljpzvAtWPdyPDiwngv
-# 1OQmCezz7PHXF46no1eqkYpirPs1tqnGQ3hm9ypNp5BFKhWGFJqjvgY2mpobJyNB
-# XvuccAuwABYZveBAQd6ALg4Mhn+EtSXM7lnIrvtbebyNwr1/+5+ZyIzyYAB1+U//
-# hXo22XmdKu38iTM9qutEvdPAUO2jPbQHeWEX0KYefm03a5zhDyxCfYqaJkCYtkR9
-# Xvs0vf+EVQsCJHjZ+Z48GmUm5VcowoAYg1E4oF19aQTueLBw5fkPMomVJvS/+eLA
-# sOb5bPdtzlvA0PcLQRPs7t+0Y1qhNDaZM6E6dV/bNcf8r+b36xWtudjgiZY=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFIUy0RjQHnfo/pp0
+# xDHxWMtC4k8XMA0GCSqGSIb3DQEBAQUABIIBAKaXq0PB0LFbnZwkKRYXBMf6Dj7u
+# OpVRSV/71cQvW31InobXOcT4JUgxBmkznYPl4Tu0/mDrnob8+2uxJ/0aJ2kM9zNZ
+# jlmtsSTijwh8QX0V6PT3omj53QoqPvigC6MVRqOih6975Mer96TEPq4RIjLiysgf
+# IxUvpOmHlddBaKrypHZHOdmOG354h2s3PKzUrO0zVhr+6HqAtORPY/IY3z3dBwM1
+# xzzhn6w0PJicQ56kWYs1XmD0JPkAxJqmrtGf+kE01kwFvVY1Hdp772TnMPXPeEZx
+# YTT1kvWS/RPKnJTM09FnsY+Z/nDoQo6xLjBgQKGNd313MMEERir4u7szjaI=
 # SIG # End signature block

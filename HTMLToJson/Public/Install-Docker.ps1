@@ -17,7 +17,7 @@ function Install-Docker {
     Param()
 
     if (!$($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin")) {
-        Write-Error "The $($MyInvocation.MyCommand.Name) function from the SiteScraping Module should only be used on Linux! Halting!"
+        Write-Error "The $($MyInvocation.MyCommand.Name) function from the HTMLToJson Module should only be used on Linux! Halting!"
         $global:FunctionResult = "1"
         return
     }
@@ -241,8 +241,8 @@ function Install-Docker {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCJtlE5JSzOKP1K9QdZNu+SgL
-# LD6gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMkwo4Zzv4PMygEYyBSBwl+lW
+# 0lSgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -299,11 +299,11 @@ function Install-Docker {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCnRtZGOWwVTmg3B
-# 79ay0ET/5uXXMA0GCSqGSIb3DQEBAQUABIIBADgGScCZaaxr9DCngFf+/tvvsOPF
-# 8N1rGY5SQszpunjAFn6EiiKPUqIYJW/j6lcnqeKsp1KEsMRG5p5fMfSq0BmrxlUq
-# /tOhsxFq4L8zsPVWmv3Dih7GLfGifsrq7Mh2YhdcuUFrp6Cly5hOJ9QfJ6ww8q6/
-# LWlaojgQfjctxwBjh+YE214s0sRXAsBOQZvjsTCEGh4Sqh09f2UamQh5ICvTaaLN
-# 03iPm9zUOipVlNdnhR3hsFGSq/l29zmTwcSVN8fFjWMPDezLz/WonaBuF8bCyKhf
-# qLzF5vT//RR67+zbNT7zslAMIUt9cdhkOGGbTq29tiUecg4kcyflg8O9z/s=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFHV3Hy0TV4+HvRFD
+# 1ubqckqu7gWwMA0GCSqGSIb3DQEBAQUABIIBADyYcPazJEESQjE5drBhj3ZM9v7K
+# 4hP78EaSFfCV+pGIVpsta/G7dnn2rqBih46dIWYUU2HfAvh5WF+0hCuL9quglnuh
+# Y+2Bw8jHprIeowdbHMswg85WrNqOlbuI3Ke8Vswaf0hGRqHOQMosYWsn+9XcrTlp
+# QWShH4HLgkGVrLVAJ/lLc1f2TjSaCPxXmtIOcDg2j03SlB8h7V09Vr7OKEVxaqoP
+# 65YX7pSROUcL9S8RieEwWdzOO9z1P9gcVTqMi1n0SKRgo8xJ6BRMB9KYZY4twQBc
+# 5YD+CGLa7e3SyoWuGOL1YCYrFQ8Qbuy6VxaUtbgghXQcDZwNQMSSq5idPr0=
 # SIG # End signature block
