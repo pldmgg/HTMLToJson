@@ -4,30 +4,43 @@
 # HTMLToJson
 Use XPath to specify how to parse a particular website and return your desired Json output. Leverages [OpenScraping](https://github.com/Microsoft/openscraping-lib-csharp), [dotnet-script](https://github.com/filipw/dotnet-script), and ScrapingHub's [Splash Server](https://github.com/scrapinghub/splash) in order to fully and faithfully render javascript.
 
-## Getting Started
+# Compatibility
+All functions in the HTMLToJson Module except `Install-Docker` and `Deploy-SplashServer` are compatible with Windows PowerShell 5.1 and PowerShell Core 6.X (Windows and Linux). The `Install-Docker` and `Deploy-SplashServer` functions work on PowerShell Core 6.X on Linux (specifically Ubuntu 18.04/16.04/14.04, Debian 9/8, CentOS/RHEL 7, OpenSUSE 42).
 
-```powershell
-# One time setup
-    # Download the repository
-    # Unblock the zip
-    # Extract the HTMLToJson folder to a module path (e.g. $env:USERPROFILE\Documents\WindowsPowerShell\Modules\)
-# Or, with PowerShell 5 or later or PowerShellGet:
-    Install-Module HTMLToJson
+# Initial Prep
+In order to fully and faithfully render sites, the HTMLToJson Module relies on ScrapingHub's Splash Server. If you do not already have Splash deployed to your environment, ssh to a VM running your preferred compatible Linux distro, launch PowerShell Core (using `sudo`), and install the HTMLToJson Module -
 
-# Import the module.
-    Import-Module HTMLToJson    # Alternatively, Import-Module <PathToModuleFolder>
-
-# Get commands in the module
-    Get-Command -Module HTMLToJson
-
-# Get help
-    Get-Help <HTMLToJson Function> -Full
-    Get-Help about_HTMLToJson
+```
+sudo pwsh
+Install-Module HTMLToJson
+exit
 ```
 
-## Examples
+Next, launch pwsh (without `sudo`), import the HTMLToJson Module, and install Docker (you will receive a sudo prompt unless you have password-less sudo configured on your system).
 
-### Scenario 1
+```powershell
+pwsh
+
+Import-Module HTMLToJson
+Install-Docker
+```
+
+Finally, deploy ScrapingHub's Splash Server Docker Container -
+
+```powershell
+Deploy-SplashContainer
+```
+
+At this point, you can continue on the same Linux VM running your Splash Docker container, or you can hop back into your local workstation (Windows or Linux...and make sure you install/import the module there). Either way, the following steps will be the same.
+
+Next, we need to install the .Net Core SDK as well as dotnet-script. These provide the `dotnet` and `dotnet-script` binaries -
+
+```powershell
+Install-DotNetSDK
+Install-DotNetScript
+```
+
+# Parsing A Website Using XPath
 
 ```powershell
 PS C:\Users\zeroadmin> $JsonXPathConfigString = @"
