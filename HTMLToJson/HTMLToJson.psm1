@@ -703,12 +703,12 @@ function Install-Docker {
     if ($OSVerCheck -match "openSUSE" -and ![bool]$($ArchitectureCheck -match "arm")) {
         try {
             $SBAsString = @(
-                'Write-Host "`nOutputStartsBelow`n"'
                 'try {'
                 "    zypper --non-interactive install docker docker-compose"
                 '    systemctl start docker'
                 '    systemctl enable docker'
                 "    usermod -G docker -a $CurrentUser"
+                '    Write-Host "`nOutputStartsBelow`n"'
                 "    Get-Command docker -ErrorAction Stop | ConvertTo-Json -Depth 3"
                 '}'
                 'catch {'
@@ -742,13 +742,13 @@ function Install-Docker {
     if ($OSVerCheck -match "CentOS" -and ![bool]$($ArchitectureCheck -match "arm")) {
         try {
             $SBAsString = @(
-                'Write-Host "`nOutputStartsBelow`n"'
                 'try {'
                 '    yum install net-tools -y'
                 '    curl -fsSL https://get.docker.com/ | sh'
                 '    systemctl start docker'
                 '    systemctl enable docker'
                 "    usermod -aG docker $CurrentUser"
+                '    Write-Host "`nOutputStartsBelow`n"'
                 "    Get-Command docker -ErrorAction Stop | ConvertTo-Json -Depth 3"
                 '}'
                 'catch {'
@@ -781,7 +781,6 @@ function Install-Docker {
     if ($OSVerCheck -match "Ubuntu" -and ![bool]$($ArchitectureCheck -match "arm")) {
         try {
             $SBAsString = @(
-                'Write-Host "`nOutputStartsBelow`n"'
                 'try {'
                 '    apt-get update'
                 '    apt-get install -y apt-transport-https ca-certificates curl software-properties-common'
@@ -793,6 +792,7 @@ function Install-Docker {
                 "    usermod -aG docker $CurrentUser"
                 '    systemctl start docker'
                 '    systemctl enable docker'
+                '    Write-Host "`nOutputStartsBelow`n"'
                 "    Get-Command docker -ErrorAction Stop | ConvertTo-Json -Depth 3"
                 '}'
                 'catch {'
@@ -825,7 +825,6 @@ function Install-Docker {
     if ($OSVerCheck -match "Debian" -and ![bool]$($ArchitectureCheck -match "arm")) {
         try {
             $SBAsString = @(
-                'Write-Host "`nOutputStartsBelow`n"'
                 'try {'
                 '    apt-get update'
                 '    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common'
@@ -837,6 +836,7 @@ function Install-Docker {
                 "    usermod -aG docker $CurrentUser"
                 '    systemctl start docker'
                 '    systemctl enable docker'
+                '    Write-Host "`nOutputStartsBelow`n"'
                 "    Get-Command dotnet -ErrorAction Stop | ConvertTo-Json -Depth 3"
                 '}'
                 'catch {'
@@ -1324,8 +1324,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUudf5jGKHoSzEdr5UqUfmvORj
-# 94+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUe/wKyIcNfUENdW6HvDo4u0jn
+# aXegggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1382,11 +1382,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFM3zNYAPQF4WsNcn
-# C+ooSDNpb1RHMA0GCSqGSIb3DQEBAQUABIIBALlSA+c25Kd0/f4+44yd0umEJQE5
-# cYEmnMdDZcPGSht2mQKpucndkHog6aYN9vCKfaypLmuEf0gA0TshtkK6EX7y6q/J
-# 0PbUrXCmQavQbkihB/sFMww3n6PHxBSo3XFjoL+qDj8pS7X44uMPXuuiUfL1+xhg
-# 3X0W5+yrV+fxFXpY2Us3GDuxrbfuXXmHncVfv1gD/vJVB2NfzR3x572YpIMg37qj
-# xF/t+2Rt84ZhHysnRDkiMkI0x0VRYTfooNr8mtY/ePmQ0jKACyJDeVImq4edAcLJ
-# 0wrYx8Mnh32/+pHL8/GORmmumk6QYpXexbpumoqv8blqeQk6Ziwxkprr/Ig=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFL4Vpjl17vigBgRb
+# xvdZH9FqYu91MA0GCSqGSIb3DQEBAQUABIIBAF4wxafA/BWMzhZs81w20J9WdjPS
+# +MRsT/rT2/rrII3wkGsM+GahL3MVpLUmbIx687IeCVqjUL1CkBfHtzCgiisLY49I
+# vMMGc7CuoeNdMUgGpac/fG8qBONHWp27LISHrOYeor8szaJTsuNx60G1nLy0TGVZ
+# TewNQAZdStXtfJA5mVZanziyBY9oeifg7z7pHzfxH86PytB3K7+OOxSUg2NGb1v5
+# LHsJZMnDVeGLZaW1JjklJgsZBHbJ+jHbpLYNm/jTusg/g3J8M6gtaf6PSdahL/XS
+# 2ywnYnADlEpbsW/h0PhGhpx4Lf2D7WuDt6vbW1cY8r4fKjfDaeWaHxGE/xA=
 # SIG # End signature block
