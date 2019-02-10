@@ -264,7 +264,7 @@ function Get-SiteAsJson {
         [switch]$RemoveFileOutputs
     )
 
-    # Make sure we have dotnet and dotnet-script in our $env:Path
+    # Make sure we have dotnet and dotnet-script in our $env:PATH
     $DirSep = [IO.Path]::DirectorySeparatorChar
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -276,10 +276,10 @@ function Get-SiteAsJson {
             return
         }
 
-        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
         if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
             $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-            $env:Path = $CurrentEnvPathArray -join ';'
+            $env:PATH = $CurrentEnvPathArray -join ';'
         }
     }
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -298,10 +298,10 @@ function Get-SiteAsJson {
                 return
             }
 
-            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
             if ($CurrentEnvPathArray -notcontains $DotNetDir) {
                 $CurrentEnvPathArray.Insert(0,$DotNetDir)
-                $env:Path = $CurrentEnvPathArray -join ';'
+                $env:PATH = $CurrentEnvPathArray -join ';'
             }
         }
         if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
@@ -898,10 +898,10 @@ function Install-DotNetScript {
     $DirSep = [System.IO.Path]::DirectorySeparatorChar
     $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
 
-    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
     if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
         $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-        $env:Path = $CurrentEnvPathArray -join ';'
+        $env:PATH = $CurrentEnvPathArray -join ';'
     }
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -958,12 +958,12 @@ function Install-DotNetSDK {
             return
         }
 
-        # Make sure $env:Path is updated
+        # Make sure $env:PATH is updated
         $DotNetExeDir = "C:\Program Files\dotnet"
-        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
         if ($CurrentEnvPathArray -notcontains $DotNetExeDir) {
             $CurrentEnvPathArray.Insert(0,$DotNetExeDir)
-            $env:Path = $CurrentEnvPathArray -join ';'
+            $env:PATH = $CurrentEnvPathArray -join ';'
         }
 
         $DotNetCommandInfo = Get-Command dotnet
@@ -1324,8 +1324,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUe/wKyIcNfUENdW6HvDo4u0jn
-# aXegggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmWiz7Y6MXPGOUahJuywjrOeP
+# iSmgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1382,11 +1382,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFL4Vpjl17vigBgRb
-# xvdZH9FqYu91MA0GCSqGSIb3DQEBAQUABIIBAF4wxafA/BWMzhZs81w20J9WdjPS
-# +MRsT/rT2/rrII3wkGsM+GahL3MVpLUmbIx687IeCVqjUL1CkBfHtzCgiisLY49I
-# vMMGc7CuoeNdMUgGpac/fG8qBONHWp27LISHrOYeor8szaJTsuNx60G1nLy0TGVZ
-# TewNQAZdStXtfJA5mVZanziyBY9oeifg7z7pHzfxH86PytB3K7+OOxSUg2NGb1v5
-# LHsJZMnDVeGLZaW1JjklJgsZBHbJ+jHbpLYNm/jTusg/g3J8M6gtaf6PSdahL/XS
-# 2ywnYnADlEpbsW/h0PhGhpx4Lf2D7WuDt6vbW1cY8r4fKjfDaeWaHxGE/xA=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFujremM+AT779rV
+# 8jBZRpurLQ2iMA0GCSqGSIb3DQEBAQUABIIBAD8UfEdoRlw03yU+BVkwspe4j0jM
+# WDezIWpg82R4YtlaO129zQ5EgCcQCa9mjz6+tJd+lzvRK6jrYZC/BW1oaCaCby0n
+# vL20Hn990G30Z8XiEFAYvdOtZxPyTsppS59FU/W8uLLIBp5UZKSpeIdVq/R/XHSP
+# t1yz8qTEUgtG/i80V8a/F3ochMW3SE2kGapX9bkK08Y04yP1PcghUn+K/pK588+E
+# SEr5Yd/Ck95DJWNc4E6uPjEJc/AF1QWJBjriatmCdKjfd4/0ZLl/FKvJAk5BxtNm
+# 0E7C4TdCb3ktaV/6lRUki/6g3nykC8VRrz3UCOAL1MN17/pKSdvQlpNQ3ds=
 # SIG # End signature block

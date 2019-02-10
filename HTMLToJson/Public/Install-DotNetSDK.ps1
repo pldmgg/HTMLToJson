@@ -44,12 +44,12 @@ function Install-DotNetSDK {
             return
         }
 
-        # Make sure $env:Path is updated
+        # Make sure $env:PATH is updated
         $DotNetExeDir = "C:\Program Files\dotnet"
-        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
         if ($CurrentEnvPathArray -notcontains $DotNetExeDir) {
             $CurrentEnvPathArray.Insert(0,$DotNetExeDir)
-            $env:Path = $CurrentEnvPathArray -join ';'
+            $env:PATH = $CurrentEnvPathArray -join ';'
         }
 
         $DotNetCommandInfo = Get-Command dotnet
@@ -304,8 +304,8 @@ function Install-DotNetSDK {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbgZNjppT4e3qAse02puA4Rgo
-# 8Umgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUunhuuaKFG2ZSXPMS/9XcdCVo
+# awOgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -362,11 +362,11 @@ function Install-DotNetSDK {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFJFquNr0v1QyuHbp
-# hv2KLJ8x+TVmMA0GCSqGSIb3DQEBAQUABIIBAL6ioT5Wts8km95p/9kNvYNhSQLW
-# TUbbQeyweOQzmG+NE9xKosfS4EIPs7lmfkFwY+O14KjK22bwHMtlPSGpISezoNNl
-# Zvp7quwyfWNEqifCbR2KD+GV5iXdkabLsZBh7NS+15ZqwryuZzRBK4bq9jzI0NKY
-# WHG380cUFDSxizl9mdbVHXg+3tzTM2wfPVWrGtisbYDGOVe4K7x55RRL7phkr20b
-# JwJnBjnpIaHuupZ4UDA5t30OdpvO28PIHnMh+eeNs8TjbBkbmUAiAsPYsN8Ch144
-# oQ3Y9p4Z7JCPixP3z5JbotPCbNz1vvMTEed0+bM3kRy9MlqzUvvy2WWYLV4=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCQSXQspnR6GUaAQ
+# 53xoHJwgzHc9MA0GCSqGSIb3DQEBAQUABIIBAKDCELHFgtnKhtG3LwMOBV+T/k1R
+# 9BkzgHjU99Q1kUSRSqcNZDBnfDEusnJVFgpyhag8afOuRlytUIOQHvFr+t+idIfu
+# u5HUdbf5UuHGjCq8u/iZznU/8e59hO9ytGlpNlMZTk2Hx3ZQg2Ofmsvxy1csrESi
+# nAFyJAdxW9SEkv5+txMwLp3a7r5JfbqEiBiiI7pqLVCCZtfsb+z6TNMU99NwxrHi
+# iE3YzcfXJS8pjdMY93zzMA5NlZDlNMxgKITDVSfjEEHPM7ZOnGrV7KIg+Z+bDZ6h
+# P0trotqG/NhSa08kd2b/VMJnMixIma4xp7ROT6ax/rfKl6X4oWTT35xZRfo=
 # SIG # End signature block

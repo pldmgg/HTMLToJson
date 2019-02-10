@@ -209,11 +209,11 @@ function DownloadNuGetPackage {
             }
             $NugetDir = $NugetPath | Split-Path -Parent
 
-            # Update PowerShell $env:Path
-            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+            # Update PowerShell $env:PATH
+            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
             if ($CurrentEnvPathArray -notcontains $NugetDir) {
                 $CurrentEnvPathArray.Insert(0,$NugetDir)
-                $env:Path = $CurrentEnvPathArray -join ';'
+                $env:PATH = $CurrentEnvPathArray -join ';'
             }
             
             # Update SYSTEM Path
@@ -343,8 +343,8 @@ function DownloadNuGetPackage {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7hp6sU9NlqepGAP95AFiFvzK
-# Kg2gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/dDSVRU9rMGKECxfni7UqlBL
+# 6PKgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -401,11 +401,11 @@ function DownloadNuGetPackage {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFNZOiZsF8AH8TCZ
-# NycIvZclstMAMA0GCSqGSIb3DQEBAQUABIIBAA6z0lmGvbGtY0DNLTGPdUozIBge
-# Bw52pQeuG8Vd5uLiBIiCGoDqeR3YX8T2lgg6EKcAtHUzWXKag5Bbu05aYFwxARP/
-# FG2Gp/NOP2paAZR1SGuDDFOR8MzIgN3if9cvKqx64gxi0f4Io5k+glM5cmSSceNY
-# dzmz3XyhFs6o8JqMhqTvcHHnZ/2HANqiuqMCem3UCcQ/qbjQTajeHqK1nG+Aa26c
-# vIlKIglAWDzNRUI4ad18RJex3ukIivzVI/JvoYA9Da4LYpjzWqbH0nSnktLBkHSB
-# YahbfVSURkToBxmyM6cceG3HF20ZdMMtVvAMpNX5q3tnlVPkYmQKQBjDhdk=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFJz4X72xOHInOeUL
+# c/WQPxgoJjV1MA0GCSqGSIb3DQEBAQUABIIBAAnJj2tJVUbzx7AIiMVyBLCopE0W
+# ZYQCMx2r8yuluXyFHqQ6fZ+KWz/QXIO+Ck4pYcSS8/7s4WoGr3HtI1MatoUoTWTz
+# rzZNlWZtccfqVA42RLkey4K/rnfzkwD1ZyItk0Q7g8XbLA90Vwbh5waXJscH0dF8
+# Ut7QeOIaitpQmDOigSuLuFEiQdcbwZ3JIRnxMhYhyika8Rlg9LVkml4M4Xvip8XP
+# yoMRufssMcDovBqIFAK3e4TcfG4q2e1RdEJzt92ranwb8yGmEdUL6JmVR2VLdLXY
+# +bq78BA03PqPdWn4jyYG5eFpmf10pFQ3rhu+a8zlQMu577OekLpkvI7jkJ8=
 # SIG # End signature block

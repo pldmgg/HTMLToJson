@@ -28,10 +28,10 @@ function Install-DotNetScript {
     $DirSep = [System.IO.Path]::DirectorySeparatorChar
     $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
 
-    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
     if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
         $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-        $env:Path = $CurrentEnvPathArray -join ';'
+        $env:PATH = $CurrentEnvPathArray -join ';'
     }
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -44,8 +44,8 @@ function Install-DotNetScript {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULu8lnrox7JGux3tu7tgBbKvM
-# Lt+gggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUu1DqNuy/4kieJG65++ciGUaG
+# onWgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -102,11 +102,11 @@ function Install-DotNetScript {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCwseQurf1r6i0hF
-# HlPzuuUUSeQUMA0GCSqGSIb3DQEBAQUABIIBAC1ZXMG9ZoOCyGN8d9N56LjnQDxA
-# v7cgTy46TnqRKLmbJcb6+fFZ8Eux0QEhav3QOO/xcTOJ88yuyMV6xT3KLVZVzNeR
-# J8vmz0eaObH2S7y6DEwcbVoQPqe/X7hHG7M4+IB05RMT4dQPuUy4a9VDXUp9Wh2f
-# 9coedrxQGGSP9wRjBAUo0CiVBOLGA3XqBkCXkx3BAsuoH4U7DiQQFOczIvGBGCfs
-# kldAQ+XggCG1c55g1SLtbowmNAy5a2021Txh+AYVsjxkTWHDURIOrmoCP5/mUfo/
-# XxIM6NVacpdQ2zxKVkLY6pdRcWbF5a6anEd3I4ykwtMSxjTLaOI5wEHqR80=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCoyCnJguKACb3pj
+# LB8dAdFvOsKiMA0GCSqGSIb3DQEBAQUABIIBAL3A2V4WA2/vsIJ1y8AyVZkWHwiJ
+# PWAFYrDcLW6BXdm6OKT2H9E9ygMQ9EGCLOj17DNCfiauny6TTs4BrtrqmGXl/E05
+# q5WYFoF06OuOTPUezSLWjfi+Jp+NpkgE8rcL+vNCj2CqdlkhR9hoe1IeO6gVXkx2
+# fa321JXos1PpDRHP2h+KNDRZzLba/oEhJDDrt0Qa0t0FTHMKYjloAVb46F/u19K+
+# nqlMwDhGzYnZ70V8/zlGXHt9d5yLmqBZ/n0/G+2Xi0P5axC7bQ3fKxmY9mzSuDkl
+# YPz7+ojJzHZEVQjJje8roDNr4H/HN1C8Q+vNTyrB04QiRx3YU6z5ucLwTr8=
 # SIG # End signature block

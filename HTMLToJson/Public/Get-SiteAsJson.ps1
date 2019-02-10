@@ -140,7 +140,7 @@ function Get-SiteAsJson {
         [switch]$RemoveFileOutputs
     )
 
-    # Make sure we have dotnet and dotnet-script in our $env:Path
+    # Make sure we have dotnet and dotnet-script in our $env:PATH
     $DirSep = [IO.Path]::DirectorySeparatorChar
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -152,10 +152,10 @@ function Get-SiteAsJson {
             return
         }
 
-        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+        [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
         if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
             $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-            $env:Path = $CurrentEnvPathArray -join ';'
+            $env:PATH = $CurrentEnvPathArray -join ';'
         }
     }
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -174,10 +174,10 @@ function Get-SiteAsJson {
                 return
             }
 
-            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:Path -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+            [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
             if ($CurrentEnvPathArray -notcontains $DotNetDir) {
                 $CurrentEnvPathArray.Insert(0,$DotNetDir)
-                $env:Path = $CurrentEnvPathArray -join ';'
+                $env:PATH = $CurrentEnvPathArray -join ';'
             }
         }
         if (!$(Get-Command dotnet -ErrorAction SilentlyContinue)) {
@@ -505,8 +505,8 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUShjyow3bRTfA1Cn2hS/BQ3Ls
-# Ypigggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAC4aqKpuOL/6ZUMol6GnZ0jP
+# CNKgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -563,11 +563,11 @@ Console.WriteLine(JsonConvert.SerializeObject(scrapingResults, Newtonsoft.Json.F
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFI9q3gl+aFuVlW4t
-# 2n3ATqNyLvL6MA0GCSqGSIb3DQEBAQUABIIBAGIqLmoM28SgNm5VcWpXgJH44IMd
-# p+4ZGpaZPvU6GsBgMX3htj8iF5Ud9ndtzEwhAS+nX6s3nFy7Ww5vaaGU0RKYoAi/
-# CsFkFESApWf+gghXOSZ2ipMUFsDTABJDpRK2lIuNEnwo0z/LvOW+kszGCIkcRaNA
-# BUdbv7iJ6A3f43zmw3NUd+RibfMTsrRwgHL7pXLFZ7C7BetyRnlXKtK1M+29e/eN
-# z3Ar7+tV0y3rfdg7TIEkdINqJum4ow92TJW45sVS5aTFr+eeuPgk2l7P2bUsfKb6
-# gCV8xA1PpGpQPF0W0kxYxLc9pOWT6EQB1aPqldDjT49vvive1LHEfExC9uE=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFPzUUbAV0ivixI5b
+# LARBOhLrdJ/fMA0GCSqGSIb3DQEBAQUABIIBAEcfZcZ4P4mZy9RxiT0V2oVcWsF6
+# g5Ajc/tdxjFUQ/gRFFlfHwkzxuaSf9FvmpkkpsiuNPKdGQ7CLX61PwdO2aiRtKnU
+# FSWpb4vq0NgujQElcUf+Fjl3ubUx5q5SLCmTz0PLYtC/kxzhGhp57K46j7KR7l6y
+# 89n2GweuaFi6jB6A8EffF65XNHelp/ArtPaC3MiCq/q+C3DjPsbjP+APIktnDCPt
+# jJgHuAdCmPsby0hdEPbJaL6GEHM7SU0Pi0CfjgivOlvDbXuCn3Rx22ctuIb0IZl5
+# PeCsd14CiMGOIrC2ky26nJekwW6gS5E3ig7+XUbjVl6+TIXp1sIzk0fsswM=
 # SIG # End signature block

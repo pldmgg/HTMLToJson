@@ -1,9 +1,12 @@
 # Change log
 
+## 0.8.5 (February 9, 2019)
+
+- Fixed $env:PATH issues (the environment vairable needed to be capitalized for Linux)
+
 ## 0.8.4 (December 19, 2018)
 
 - Updated Install-Docker function to fix output parsing issues.
-
 
 ## 0.8.3 (December 06, 2018)
 
