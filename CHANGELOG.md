@@ -1,5 +1,9 @@
 # Change log
 
+## 0.8.6 (February 9, 2019)
+
+- Fixed PATH issues with Install-DotNetScript
+
 ## 0.8.5 (February 9, 2019)
 
 - Fixed $env:PATH issues (the environment vairable needed to be capitalized for Linux)

@@ -897,11 +897,22 @@ function Install-DotNetScript {
     # $HOME/.dotnet/tools
     $DirSep = [System.IO.Path]::DirectorySeparatorChar
     $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+    $PathSeparatorChar = if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {':'} else {';'}
 
-    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split $PathSeparatorChar | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
     if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
         $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-        $env:PATH = $CurrentEnvPathArray -join ';'
+        $env:PATH = $CurrentEnvPathArray -join $PathSeparatorChar
+    }
+
+    if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {
+        $PathCheckforProfile = @"
+[[ ":`$PATH:" != *":$DotNetToolsDir`:"* ]] && PATH="$DotNetToolsDir`:`${PATH}"
+"@
+        $ProfileContent = Get-Content "$HOME/.profile"
+        if (!$($ProfileContent -match 'dotnet/tools')) {
+            Add-Content -Path "$HOME/.profile" -Value $PathCheckforProfile
+        }
     }
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -1324,8 +1335,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmWiz7Y6MXPGOUahJuywjrOeP
-# iSmgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/lclAuNtoU7yMLcPNhqhhJht
+# 9dKgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1382,11 +1393,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFFujremM+AT779rV
-# 8jBZRpurLQ2iMA0GCSqGSIb3DQEBAQUABIIBAD8UfEdoRlw03yU+BVkwspe4j0jM
-# WDezIWpg82R4YtlaO129zQ5EgCcQCa9mjz6+tJd+lzvRK6jrYZC/BW1oaCaCby0n
-# vL20Hn990G30Z8XiEFAYvdOtZxPyTsppS59FU/W8uLLIBp5UZKSpeIdVq/R/XHSP
-# t1yz8qTEUgtG/i80V8a/F3ochMW3SE2kGapX9bkK08Y04yP1PcghUn+K/pK588+E
-# SEr5Yd/Ck95DJWNc4E6uPjEJc/AF1QWJBjriatmCdKjfd4/0ZLl/FKvJAk5BxtNm
-# 0E7C4TdCb3ktaV/6lRUki/6g3nykC8VRrz3UCOAL1MN17/pKSdvQlpNQ3ds=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFD0V+PoGBgeMz3qH
+# 4e9NzzhhQPmHMA0GCSqGSIb3DQEBAQUABIIBAISOjLHF5YwVkd3DHI20RKXIQr5r
+# rFu1bug0hPzCBZeHOa/15I09y33pgJosJqe1lyKFJszKL/hbjeBDb7uUATWkNH+e
+# OFzB1P9t/eJM2x3PCk5DHxaNYhvoAQ1hCoqd9kxh1QViVetwmleWCtu+uVx/+fdE
+# U30dTuUBWfh7n9Qs0FLS/NsV4EL8iCsDkUU3MB29NCUSmW2iVZKyZY26K5cJLn+B
+# rsy9Smll9zJAzSvL9U7GchyyvPEVqKhlEcV+frNlKVVW8gWIYzd25S+B3x/p5P7m
+# lNmvtIIdGG0AClayvaM14Mno7aYylWx0ZonFVDe+gU55Mjem6+YycQ8VTrc=
 # SIG # End signature block

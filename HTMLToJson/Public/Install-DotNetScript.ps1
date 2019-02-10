@@ -27,11 +27,22 @@ function Install-DotNetScript {
     # $HOME/.dotnet/tools
     $DirSep = [System.IO.Path]::DirectorySeparatorChar
     $DotNetToolsDir = $HOME + $DirSep + '.dotnet' + $DirSep + 'tools'
+    $PathSeparatorChar = if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {':'} else {';'}
 
-    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split ';' | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
+    [System.Collections.Arraylist][array]$CurrentEnvPathArray = $env:PATH -split $PathSeparatorChar | Where-Object {![System.String]::IsNullOrWhiteSpace($_)} | Sort-Object | Get-Unique
     if ($CurrentEnvPathArray -notcontains $DotNetToolsDir) {
         $CurrentEnvPathArray.Insert(0,$DotNetToolsDir)
-        $env:PATH = $CurrentEnvPathArray -join ';'
+        $env:PATH = $CurrentEnvPathArray -join $PathSeparatorChar
+    }
+
+    if ($PSVersionTable.Platform -eq "Unix" -or $PSVersionTable.OS -match "Darwin") {
+        $PathCheckforProfile = @"
+[[ ":`$PATH:" != *":$DotNetToolsDir`:"* ]] && PATH="$DotNetToolsDir`:`${PATH}"
+"@
+        $ProfileContent = Get-Content "$HOME/.profile"
+        if (!$($ProfileContent -match 'dotnet/tools')) {
+            Add-Content -Path "$HOME/.profile" -Value $PathCheckforProfile
+        }
     }
 
     if (!$(Get-Command dotnet-script -ErrorAction SilentlyContinue)) {
@@ -44,8 +55,8 @@ function Install-DotNetScript {
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUu1DqNuy/4kieJG65++ciGUaG
-# onWgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUfHQFozAa5HYUi06IsYJCWH90
+# t4ygggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -102,11 +113,11 @@ function Install-DotNetScript {
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFCoyCnJguKACb3pj
-# LB8dAdFvOsKiMA0GCSqGSIb3DQEBAQUABIIBAL3A2V4WA2/vsIJ1y8AyVZkWHwiJ
-# PWAFYrDcLW6BXdm6OKT2H9E9ygMQ9EGCLOj17DNCfiauny6TTs4BrtrqmGXl/E05
-# q5WYFoF06OuOTPUezSLWjfi+Jp+NpkgE8rcL+vNCj2CqdlkhR9hoe1IeO6gVXkx2
-# fa321JXos1PpDRHP2h+KNDRZzLba/oEhJDDrt0Qa0t0FTHMKYjloAVb46F/u19K+
-# nqlMwDhGzYnZ70V8/zlGXHt9d5yLmqBZ/n0/G+2Xi0P5axC7bQ3fKxmY9mzSuDkl
-# YPz7+ojJzHZEVQjJje8roDNr4H/HN1C8Q+vNTyrB04QiRx3YU6z5ucLwTr8=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFJSIc04B0hHwKtC2
+# jYBJH6pndmOIMA0GCSqGSIb3DQEBAQUABIIBAKDWgZQ/GCYg+QBNDoYsbcbvnxxQ
+# XcHRo3fE3wethA5y5v4ap3dD71psRCwuMH4hA2VLAqXKSk0uOtz++ePGTHfnUVts
+# c/6d/+xG/jhdcnbkpIcirYjtkKoceBEOE7nhv5m44ISkmHG4r6ZzzN4gQYQs6CEN
+# 8s0cRZB5zfeUaqF1xUhh7L+H7zOvbWRvAMeczydLsqTTlYZsoux4y/7d8hp29ELE
+# sy0SK1fbsvDBaMZBx8f9XgmKB/WlQnCpvfxgc1pV78wDr3RbKezkWX1+/AqejNs4
+# ipoHhaTGxc3bPcwDMzum65MVvGuwSUtLY/vXYgQPSrhhFER233CZX9lmlrg=
 # SIG # End signature block
