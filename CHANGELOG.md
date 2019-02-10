@@ -1,5 +1,9 @@
 # Change log
 
+## 0.8.7 (February 9, 2019)
+
+- Fixed issue with defining Project Name in Get-SiteAsJson
+
 ## 0.8.6 (February 9, 2019)
 
 - Fixed PATH issues with Install-DotNetScript

@@ -338,7 +338,8 @@ function Get-SiteAsJson {
     $SplashServerUriString = $SplashServerUri.OriginalString
     
     $SiteNamePrep = @($($Url.OriginalString -split '/' | Where-Object {$_ -notmatch 'http' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
-    $SiteName = @($($SiteNamePrep -split '\.' | Where-Object {$_ -notmatch 'www' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
+    $SiteNamePrepA = $($SiteNamePrep -split '\.') -split ':'
+    $SiteName = @($($SiteNamePrepA | Where-Object {$_ -notmatch 'www' -and ![System.String]::IsNullOrWhiteSpace($_)}))[0]
 
     if (!$SiteName) {
         Write-Error "Unable to parse site domain name from the value provided to the -Url parameter! Halting!"
@@ -1335,8 +1336,8 @@ end
 # SIG # Begin signature block
 # MIIMiAYJKoZIhvcNAQcCoIIMeTCCDHUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/lclAuNtoU7yMLcPNhqhhJht
-# 9dKgggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPChj90TwqKPQtrsQC4x0iAAw
+# rDigggn9MIIEJjCCAw6gAwIBAgITawAAAB/Nnq77QGja+wAAAAAAHzANBgkqhkiG
 # 9w0BAQsFADAwMQwwCgYDVQQGEwNMQUIxDTALBgNVBAoTBFpFUk8xETAPBgNVBAMT
 # CFplcm9EQzAxMB4XDTE3MDkyMDIxMDM1OFoXDTE5MDkyMDIxMTM1OFowPTETMBEG
 # CgmSJomT8ixkARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMT
@@ -1393,11 +1394,11 @@ end
 # ARkWA0xBQjEUMBIGCgmSJomT8ixkARkWBFpFUk8xEDAOBgNVBAMTB1plcm9TQ0EC
 # E1gAAAH5oOvjAv3166MAAQAAAfkwCQYFKw4DAhoFAKB4MBgGCisGAQQBgjcCAQwx
 # CjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGC
-# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFD0V+PoGBgeMz3qH
-# 4e9NzzhhQPmHMA0GCSqGSIb3DQEBAQUABIIBAISOjLHF5YwVkd3DHI20RKXIQr5r
-# rFu1bug0hPzCBZeHOa/15I09y33pgJosJqe1lyKFJszKL/hbjeBDb7uUATWkNH+e
-# OFzB1P9t/eJM2x3PCk5DHxaNYhvoAQ1hCoqd9kxh1QViVetwmleWCtu+uVx/+fdE
-# U30dTuUBWfh7n9Qs0FLS/NsV4EL8iCsDkUU3MB29NCUSmW2iVZKyZY26K5cJLn+B
-# rsy9Smll9zJAzSvL9U7GchyyvPEVqKhlEcV+frNlKVVW8gWIYzd25S+B3x/p5P7m
-# lNmvtIIdGG0AClayvaM14Mno7aYylWx0ZonFVDe+gU55Mjem6+YycQ8VTrc=
+# NwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFI92eEZDyTUsE8BQ
+# pqo9SVEx0NEbMA0GCSqGSIb3DQEBAQUABIIBAALVukNvQ5pefD2mVUhaafYkTX0F
+# LDAZ18KlHml+VXaufjLHwiRdIdtJE/wZ4UNidgBcCeAnrocxPdYTGgFG3J+XnBa4
+# v7bY2TE6jWQNZGPOeM5ZnY7Fjk19NSHOTPhyFP1w8HASwOT4huXASTyg0BNoIRms
+# OyygHi66EzLCLp4ccTRDpHkuPGZpcjUl0wYGwmijl93n/DKDAj2+Ucz9qo5dVyp4
+# jS2oSkZtjltAWCs3d0SBvrURP0d7TNJopwi2OTm2jIyD135xN8HWICNNdX7eX2mt
+# iSKd7NhNVE7mRgHO4pA7YV/2HdU7uD8T2/uXq+WgdSqMKH9IrLPEhAyKFMk=
 # SIG # End signature block
